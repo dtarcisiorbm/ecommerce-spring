@@ -3,9 +3,12 @@ package com.ecommerce_backend.backend.entrypoints.controller;
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
 import com.ecommerce_backend.backend.core.useCases.AuthenticateUserUseCase;
+import com.ecommerce_backend.backend.core.useCases.CreateUserUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.LoginRequest;
 import com.ecommerce_backend.backend.entrypoints.dto.LoginResponse;
+import com.ecommerce_backend.backend.entrypoints.dto.RegisterRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,12 +21,21 @@ public class AuthController {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final TokenServiceGateway tokenService; // Injeção do novo serviço
-
-    public AuthController(AuthenticateUserUseCase authenticateUserUseCase, TokenServiceGateway tokenService) {
+    private final CreateUserUseCase createUserUseCase;
+    public AuthController(AuthenticateUserUseCase authenticateUserUseCase, TokenServiceGateway tokenService,CreateUserUseCase createUserUseCase) {
         this.authenticateUserUseCase = authenticateUserUseCase;
         this.tokenService = tokenService;
+        this.createUserUseCase=createUserUseCase;
     }
+    @PostMapping("/register")
+    public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest request) {
+        // Converte DTO para Objeto de Domínio
+        User newUser = new User(null, request.name(), request.email(), request.password(), null, true);
 
+        createUserUseCase.execute(newUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         User user = authenticateUserUseCase.execute(request.email(), request.password());

@@ -22,9 +22,19 @@ public class CreateUserUseCase {
             throw new IllegalArgumentException("Email already exists");
         }
 
+        // Criptografa a senha usando o gateway
         String protectedPassword = passwordHasherGateway.hash(user.password());
 
-        User userToSave = new User(null, user.name(), user.email(), protectedPassword, Collections.singleton("USER"), true);
+        // Cria uma nova instância do record com a senha hash e roles padrão
+        User userToSave = new User(
+                null,
+                user.name(),
+                user.email(),
+                protectedPassword,
+                Collections.singleton("USER"),
+                true
+        );
+
         return userGateway.save(userToSave);
     }
 }
