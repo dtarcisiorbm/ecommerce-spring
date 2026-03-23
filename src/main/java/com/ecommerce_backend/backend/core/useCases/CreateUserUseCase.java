@@ -23,8 +23,8 @@ public class CreateUserUseCase {
         }
 
         String protectedPassword = passwordHasherGateway.hash(user.password());
-        user.password(protectedPassword);
-        User userToSave = new User(null,user.name(), user.email(), protectedPassword, Collections.singleton("USER"),true );
+
+        User userToSave = new User(null, user.name(), user.email(), protectedPassword, Collections.singleton("USER"), true);
         return userGateway.save(userToSave);
     }
 }

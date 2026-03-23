@@ -19,7 +19,8 @@ public class BCryptHasherAdapter implements PasswordHasherGateway {
 
     @Override
     public boolean matches(String plainText, String hashedText) {
-        return false;
+        // IMPORTANTE: Use o encoder para comparar, senão o login falhará sempre
+        return encoder.matches(plainText, hashedText);
     }
 }
 
