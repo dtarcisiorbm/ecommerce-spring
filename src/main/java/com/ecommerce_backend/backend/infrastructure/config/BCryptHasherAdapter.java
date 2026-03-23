@@ -16,5 +16,10 @@ public class BCryptHasherAdapter implements PasswordHasherGateway {
     public String hash(String plainText) {
         return encoder.encode(plainText);
     }
+
+    @Override
+    public boolean matches(String plainText, String hashedText) {
+        return false;
+    }
 }
 
