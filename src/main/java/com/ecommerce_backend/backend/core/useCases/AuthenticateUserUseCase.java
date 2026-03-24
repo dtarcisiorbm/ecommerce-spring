@@ -15,13 +15,17 @@ public class AuthenticateUserUseCase {
     }
 
     public User execute(String email, String password) {
-     User user = userGateway.findByEmail(email).orElseThrow(()->new IllegalArgumentException("User not found"));
-     if(!hasher.matches(password, user.getPassword())) {
-        throw new IllegalArgumentException("Invalid password");
-     }
-     if(!user.active()) {
-        throw new IllegalArgumentException("User is not active");
-     }
-     return user;
+        User user = userGateway.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Altere de user.getPassword() para user.password()
+        if (!hasher.matches(password, user.password())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
+        if (!user.active()) {
+            throw new IllegalArgumentException("User is not active");
+        }
+        return user;
     }
 }

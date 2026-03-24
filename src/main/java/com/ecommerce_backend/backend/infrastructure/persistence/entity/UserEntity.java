@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -13,7 +14,7 @@ public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

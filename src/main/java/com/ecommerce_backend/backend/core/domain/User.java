@@ -1,9 +1,10 @@
 package com.ecommerce_backend.backend.core.domain;
 
 import java.util.Set;
+import java.util.UUID;
 
 public record User(
-        Long id,
+        UUID id,
         String name,
         String email,
         String password, // Senha já criptografada
