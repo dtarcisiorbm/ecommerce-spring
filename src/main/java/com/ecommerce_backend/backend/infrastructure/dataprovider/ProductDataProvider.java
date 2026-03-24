@@ -30,7 +30,6 @@ public class ProductDataProvider implements ProductGateway {
     public Optional<Product> findBySku(String sku) {
         return repository.findBySku(sku).map(mapper::toDomain);
     }
-
     @Override
     public Optional<Product> findById(Long id) {
         return repository.findById(id).map(mapper::toDomain);
