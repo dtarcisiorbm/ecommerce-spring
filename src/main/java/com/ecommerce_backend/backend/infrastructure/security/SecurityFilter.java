@@ -30,9 +30,9 @@ public class SecurityFilter extends OncePerRequestFilter {
         var token = this.recoverToken(request);
         if (token != null) {
             var login = tokenService.validateToken(token);
+            // Se o token for válido e o login não estiver vazio
             if (!login.isEmpty()) {
                 userGateway.findByEmail(login).ifPresent(user -> {
-                    // Adaptamos o nosso usuário de domínio para o formato que o Spring Security entende
                     UserDetails userDetails = org.springframework.security.core.userdetails.User
                             .withUsername(user.email())
                             .password(user.password())

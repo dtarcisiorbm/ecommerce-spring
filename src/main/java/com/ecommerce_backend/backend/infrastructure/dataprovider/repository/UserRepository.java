@@ -1,4 +1,4 @@
-package com.ecommerce_backend.backend.infrastructure.dataprovider;
+package com.ecommerce_backend.backend.infrastructure.dataprovider.repository;
 
 import com.ecommerce_backend.backend.infrastructure.persistence.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

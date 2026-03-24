@@ -29,11 +29,17 @@ public class AuthController {
     }
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest request) {
-        // Converte DTO para Objeto de Domínio
-        User newUser = new User(null, request.name(), request.email(), request.password(), null, true);
+        // Agora o domínio recebe os dados validados e mapeados corretamente
+        User newUser = new User(
+                null,
+                request.name(),
+                request.email(),
+                request.password(),
+                null,
+                true
+        ); //
 
-        createUserUseCase.execute(newUser);
-
+        createUserUseCase.execute(newUser); //
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     @PostMapping("/login")

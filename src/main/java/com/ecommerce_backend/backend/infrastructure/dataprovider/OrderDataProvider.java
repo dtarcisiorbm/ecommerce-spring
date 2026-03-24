@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.dataprovider;
 import com.ecommerce_backend.backend.core.domain.Order;
 import com.ecommerce_backend.backend.core.gateway.OrderGateway;
 import com.ecommerce_backend.backend.entrypoints.mapper.OrderMapper;
+import com.ecommerce_backend.backend.infrastructure.dataprovider.repository.OrderRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,12 +18,13 @@ public class OrderDataProvider implements OrderGateway {
         this.mapper = mapper;
     }
 
+    // Arquivo: src/main/java/com/ecommerce_backend/backend/infrastructure/dataprovider/OrderDataProvider.java
     @Override
-    @Transactional // Garante que a ordem e os itens sejam salvos na mesma transação
+    @Transactional // Garante que se houver erro nos itens, nada é salvo
     public Order save(Order order) {
         var entity = mapper.toEntity(order);
 
-        // Importante: Vincular cada item à entidade pai (Order) para o JPA mapear a FK
+        // Vincula cada item à entidade pai para que o JPA saiba onde inserir a FK
         if (entity.getItems() != null) {
             entity.getItems().forEach(item -> item.setOrder(entity));
         }

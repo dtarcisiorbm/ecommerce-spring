@@ -14,17 +14,17 @@ public class AuthenticateUserUseCase {
         this.hasher = hasher;
     }
 
+    // Local: src/main/java/com/ecommerce_backend/backend/core/useCases/AuthenticateUserUseCase.java
     public User execute(String email, String password) {
         User user = userGateway.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas.")); //
 
-        // Altere de user.getPassword() para user.password()
-        if (!hasher.matches(password, user.password())) {
-            throw new IllegalArgumentException("Invalid password");
+        if (!hasher.matches(password, user.password())) { //
+            throw new IllegalArgumentException("Credenciais inválidas.");
         }
 
-        if (!user.active()) {
-            throw new IllegalArgumentException("User is not active");
+        if (!user.active()) { //
+            throw new IllegalStateException("Esta conta está desativada.");
         }
         return user;
     }

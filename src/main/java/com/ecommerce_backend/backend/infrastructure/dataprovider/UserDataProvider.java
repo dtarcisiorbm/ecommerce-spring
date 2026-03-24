@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.dataprovider;
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.UserGateway;
 import com.ecommerce_backend.backend.entrypoints.mapper.UserMapper;
+import com.ecommerce_backend.backend.infrastructure.dataprovider.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 
