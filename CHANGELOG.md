@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Order management endpoints with OrderController
+- Order listing functionality with ListOrdersUseCase
+- Product management with ProductController
+- OrderRequest and OrderItemRequest DTOs for order creation
+- OrderConfig Spring configuration
+
+### Fixed
+- OrderItemRequest visibility issue - extracted to separate public class file
+- Cannot access 'unitPrice()' error in OrderController
+
+## [0.0.2-SNAPSHOT] - 2026-03-30
+
+### Added
 - CHANGELOG.md file to track project changes and improve team clarity
 
 ## [0.0.1-SNAPSHOT] - 2025-03-25
@@ -66,6 +79,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Entrypoint Layer**: REST controllers, DTOs, and mappers
 - **Security**: JWT-based stateless authentication
 - **Database**: Relational model with proper entity relationships
+
+## Recent Commits
+
+- `c65837e` Merge remote-tracking branch 'origin/master'
+- `f1ba51a` Fix OrderItemRequest visibility issue
+- `e4af8d3` feat: reorganize use cases and add product management features
+- `4f68f27` Add documentation for E-commerce Backend application
+- `57af985` readme
+- `e080886` fix:repository
+- `0467716` fix:repository
+- `6414533` fix:uses cases
+- `b99acf9` feat: add order management system and fix authentication beans
+- `14fa229` feat: spring security
 
 ---
 

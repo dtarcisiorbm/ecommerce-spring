@@ -40,14 +40,20 @@ src/main/java/com/ecommerce_backend/backend/
 │       ├── AuthenticateUserUseCase.java
 │       ├── CreateOrderUseCase.java
 │       ├── CreateProductUseCase.java
-│       └── CreateUserUseCase.java
+│       ├── CreateUserUseCase.java
+│       └── list/
+│           └── ListOrdersUseCase.java
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
-│   │   └── AuthController.java
+│   │   ├── AuthController.java
+│   │   ├── OrderController.java
+│   │   └── ProductController.java
 │   ├── dto/                        # Data Transfer Objects
 │   │   ├── LoginRequest.java
 │   │   ├── LoginResponse.java
-│   │   └── RegisterRequest.java
+│   │   ├── RegisterRequest.java
+│   │   ├── OrderRequest.java
+│   │   └── OrderItemRequest.java
 │   └── mapper/                     # Mapeamento de DTOs
 │       ├── OrderMapper.java
 │       ├── ProductMapper.java
@@ -206,6 +212,11 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Validações**: Estoque disponível para todos os itens
 - **Processo**: Valida estoque → Define status PENDING → Salva pedido
 
+#### **ListOrdersUseCase**
+- **Responsabilidade**: Listar todos os pedidos
+- **Retorno**: Lista de Order com todos os itens
+- **Uso**: Endpoint GET `/orders` para consulta de pedidos
+
 ## 2. Camada de Infraestrutura
 
 ### 2.1 Configurações Spring
@@ -326,6 +337,20 @@ Interfaces que estendem JpaRepository:
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Respostas**: HTTP 201 para registro, 200 com token para login
 
+#### **OrderController**
+- **Endpoints**:
+  - `POST /orders`: Criar novo pedido
+  - `GET /orders`: Listar todos os pedidos
+- **Validações**: @Valid nos DTOs, Bean Validation
+- **Mapeamento**: Conversão manual de DTO para domínio
+- **Respostas**: HTTP 201 Created para criação, 200 com lista para consulta
+
+#### **ProductController**
+- **Endpoints**:
+  - `POST /products`: Criar novo produto
+- **Validações**: @Valid nos DTOs, Bean Validation
+- **Respostas**: HTTP 201 Created
+
 ### 3.2 DTOs (Data Transfer Objects)
 
 #### **LoginRequest**
@@ -348,6 +373,23 @@ public record RegisterRequest(
 #### **LoginResponse**
 ```java
 public record LoginResponse(String token) {}
+```
+
+#### **OrderRequest**
+```java
+public record OrderRequest(
+    @NotNull Long customerId,
+    @NotEmpty @Valid List<OrderItemRequest> items
+) {}
+```
+
+#### **OrderItemRequest**
+```java
+public record OrderItemRequest(
+    @NotNull Long productId,
+    @NotNull Integer quantity,
+    @NotNull BigDecimal unitPrice
+) {}
 ```
 
 ### 3.3 Mappers (MapStruct)
@@ -499,7 +541,14 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 - `POST /auth/register` - Registrar novo usuário
 - `POST /auth/login` - Autenticar e obter token
 
-### 9.2 Headers
+### 9.2 Pedidos
+- `POST /orders` - Criar novo pedido
+- `GET /orders` - Listar todos os pedidos
+
+### 9.3 Produtos
+- `POST /products` - Criar novo produto
+
+### 9.4 Headers
 - `Authorization: Bearer <token>` - Para endpoints protegidos
 - `Content-Type: application/json` - Para requisições JSON
 
@@ -526,8 +575,30 @@ curl -X POST http://localhost:8080/auth/login \
   }'
 ```
 
+### 10.3 Criar Pedido
+```bash
+curl -X POST http://localhost:8080/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "customerId": 1,
+    "items": [
+      {
+        "productId": 1,
+        "quantity": 2,
+        "unitPrice": 99.99
+      },
+      {
+        "productId": 2,
+        "quantity": 1,
+        "unitPrice": 149.99
+      }
+    ]
+  }'
+```
+
 ---
 
-**Versão**: 1.0  
-**Data**: Março 2025  
+**Versão**: 1.1  
+**Data**: Março 2026  
 **Autor**: Sistema de Documentação Automática
