@@ -4,6 +4,8 @@ import com.ecommerce_backend.backend.core.domain.Product;
 import com.ecommerce_backend.backend.core.gateway.ProductGateway;
 import com.ecommerce_backend.backend.entrypoints.mapper.ProductMapper;
 import com.ecommerce_backend.backend.infrastructure.dataprovider.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -25,7 +27,11 @@ public class ProductDataProvider implements ProductGateway {
         var savedEntity = repository.save(entity);
         return mapper.toDomain(savedEntity);
     }
-
+    @Override
+    public Page<Product> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(mapper::toDomain);
+    }
     @Override
     public Optional<Product> findBySku(String sku) {
         return repository.findBySku(sku).map(mapper::toDomain);

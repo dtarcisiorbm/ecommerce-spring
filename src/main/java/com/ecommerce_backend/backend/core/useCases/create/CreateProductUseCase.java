@@ -1,4 +1,4 @@
-package com.ecommerce_backend.backend.core.useCases;
+package com.ecommerce_backend.backend.core.useCases.create;
 
 import com.ecommerce_backend.backend.core.domain.Product;
 import com.ecommerce_backend.backend.core.gateway.ProductGateway;

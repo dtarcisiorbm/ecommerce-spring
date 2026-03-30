@@ -1,4 +1,4 @@
-package com.ecommerce_backend.backend.core.useCases;
+package com.ecommerce_backend.backend.core.useCases.create;
 
 import com.ecommerce_backend.backend.core.domain.Order;
 import com.ecommerce_backend.backend.core.domain.OrderStatus;
@@ -6,7 +6,6 @@ import com.ecommerce_backend.backend.core.gateway.OrderGateway;
 import com.ecommerce_backend.backend.core.gateway.ProductGateway;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 public class CreateOrderUseCase {
     private final OrderGateway orderGateway;

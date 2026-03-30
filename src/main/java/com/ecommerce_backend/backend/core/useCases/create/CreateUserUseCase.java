@@ -1,10 +1,9 @@
-package com.ecommerce_backend.backend.core.useCases;
+package com.ecommerce_backend.backend.core.useCases.create;
 
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.PasswordHasherGateway;
 import com.ecommerce_backend.backend.core.gateway.UserGateway;
 
-import java.util.Collection;
 import java.util.Collections;
 
 public class CreateUserUseCase {
