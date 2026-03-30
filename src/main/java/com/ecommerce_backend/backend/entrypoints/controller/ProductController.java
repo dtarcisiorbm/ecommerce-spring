@@ -1,7 +1,8 @@
 package com.ecommerce_backend.backend.entrypoints.controller;
 
 import com.ecommerce_backend.backend.core.domain.Product;
-import com.ecommerce_backend.backend.core.useCases.CreateProductUseCase; // Use o que já existe
+
+import com.ecommerce_backend.backend.core.useCases.create.CreateProductUseCase;
 import com.ecommerce_backend.backend.core.useCases.list.ListProductsUseCase;
 // Importe um Use Case para busca por ID se existir
 import org.springframework.data.domain.Page;

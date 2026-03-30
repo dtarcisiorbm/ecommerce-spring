@@ -4,6 +4,8 @@ import com.ecommerce_backend.backend.core.domain.Order;
 import com.ecommerce_backend.backend.core.gateway.OrderGateway;
 import com.ecommerce_backend.backend.entrypoints.mapper.OrderMapper;
 import com.ecommerce_backend.backend.infrastructure.dataprovider.repository.OrderRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,12 @@ public class OrderDataProvider implements OrderGateway {
         this.repository = repository;
         this.mapper = mapper;
     }
-
+    @Override
+    public Page<Order> findAll(Pageable pageable) {
+        // Procura as entidades e utiliza o mapper para converter cada uma para o domínio
+        return repository.findAll(pageable)
+                .map(mapper::toDomain);
+    }
     // Arquivo: src/main/java/com/ecommerce_backend/backend/infrastructure/dataprovider/OrderDataProvider.java
     @Override
     @Transactional // Garante que se houver erro nos itens, nada é salvo
