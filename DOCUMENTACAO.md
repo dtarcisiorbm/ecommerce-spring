@@ -31,18 +31,22 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   ├── Product.java
 │   │   └── User.java
 │   ├── gateway/                    # Interfaces de integração
+│   │   ├── CustomerGateway.java
 │   │   ├── OrderGateway.java
 │   │   ├── PasswordHasherGateway.java
 │   │   ├── ProductGateway.java
 │   │   ├── TokenServiceGateway.java
 │   │   └── UserGateway.java
 │   └── useCases/                   # Casos de uso (regras de negócio)
-│       ├── AuthenticateUserUseCase.java
-│       ├── CreateOrderUseCase.java
-│       ├── CreateProductUseCase.java
-│       ├── CreateUserUseCase.java
-│       └── list/
-│           └── ListOrdersUseCase.java
+│       ├── create/                 # Casos de uso de criação
+│       │   ├── AuthenticateUserUseCase.java
+│       │   ├── CreateOrderUseCase.java
+│       │   ├── CreateProductUseCase.java
+│       │   └── CreateUserUseCase.java
+│       └── list/                   # Casos de uso de listagem
+│           ├── ListOrdersUseCase.java
+│           ├── ListProductsUseCase.java
+│           └── ListUsersUseCase.java
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
 │   │   ├── AuthController.java
@@ -51,32 +55,38 @@ src/main/java/com/ecommerce_backend/backend/
 │   ├── dto/                        # Data Transfer Objects
 │   │   ├── LoginRequest.java
 │   │   ├── LoginResponse.java
-│   │   ├── RegisterRequest.java
+│   │   ├── OrderItemRequest.java
 │   │   ├── OrderRequest.java
-│   │   └── OrderItemRequest.java
+│   │   └── RegisterRequest.java
+│   ├── exceptions/                 # Tratamento global de exceções
+│   │   └── GlobalExceptionHandler.java
 │   └── mapper/                     # Mapeamento de DTOs
+│       ├── CustomerMapper.java
 │       ├── OrderMapper.java
 │       ├── ProductMapper.java
 │       └── UserMapper.java
 └── infrastructure/                 # Camada de Infraestrutura
     ├── config/                     # Configurações Spring
     │   ├── OrderConfig.java
+    │   ├── ProductConfig.java
     │   ├── SecurityConfig.java
     │   └── UserConfig.java
     ├── dataprovider/               # Implementações dos Gateways
     │   ├── OrderDataProvider.java
     │   ├── ProductDataProvider.java
-    │   └── UserDataProvider.java
+    │   ├── UserDataProvider.java
+    │   └── repository/             # Repositórios Spring Data
+    │       ├── CustomerRepository.java
+    │       ├── OrderRepository.java
+    │       ├── ProductRepository.java
+    │       └── UserRepository.java
     ├── persistence/                 # Entidades JPA
     │   └── entity/
+    │       ├── CustomerEntity.java
     │       ├── OrderEntity.java
     │       ├── OrderItemEntity.java
     │       ├── ProductEntity.java
     │       └── UserEntity.java
-    ├── repository/                 # Repositórios Spring Data
-    │   ├── OrderRepository.java
-    │   ├── ProductRepository.java
-    │   └── UserRepository.java
     └── security/                   # Configurações de segurança
         ├── BCryptHasherAdapter.java
         ├── JwtTokenAdapter.java
@@ -185,6 +195,7 @@ public record User(
 Definem contratos para integração com infraestrutura, seguindo o princípio Dependency Inversion:
 
 - **ProductGateway**: Operações com produtos (save, findBySku, findById)
+- **CustomerGateway**: Operações com clientes (save, findById, findByTaxId)
 - **UserGateway**: Operações com usuários (save, findByEmail)
 - **OrderGateway**: Operações com pedidos (save)
 - **PasswordHasherGateway**: Criptografia de senhas (hash, matches)
@@ -217,6 +228,17 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Retorno**: Lista de Order com todos os itens
 - **Uso**: Endpoint GET `/orders` para consulta de pedidos
 
+#### **ListUsersUseCase**
+- **Responsabilidade**: Listar todos os usuários do sistema
+- **Retorno**: Lista de User com informações básicas
+- **Uso**: Suporte a funcionalidades administrativas
+
+#### **ListProductsUseCase**
+- **Responsabilidade**: Listar produtos com paginação
+- **Retorno**: Page<Product> com paginação configurável
+- **Parâmetros**: Pageable para controle de paginação
+- **Uso**: Endpoint GET `/products` com suporte a paginação
+
 ## 2. Camada de Infraestrutura
 
 ### 2.1 Configurações Spring
@@ -227,7 +249,7 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Endpoints Públicos**: `/auth/login`, `/auth/register`
 - **Bean**: PasswordEncoder (BCrypt), AuthenticationManager
 
-#### **UserConfig.java** & **OrderConfig.java**
+#### **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
 - **Propósito**: Configuração de beans dos casos de uso
 - **Implementação**: Injeção de dependências via @Bean
 
@@ -250,6 +272,28 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Relacionamento**: Vincula OrderItems ao Order pai
 
 ### 2.3 Entidades JPA
+
+#### **CustomerEntity**
+```java
+@Entity
+@Table(name = "customers")
+public class CustomerEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String fullName;
+    
+    @Column(nullable = false, unique = true)
+    private String email;
+    
+    @Column(name = "tax_id", nullable = false, unique = true)
+    private String taxId; // CPF/CNPJ
+}
+```
+- **Propósito**: Persistência de dados de clientes
+- **Validações**: Email e taxId únicos
+- **Campos**: ID auto-generated, nome completo, email, CPF/CNPJ
 
 #### **ProductEntity**
 ```java
@@ -304,6 +348,7 @@ public class UserEntity {
 
 Interfaces que estendem JpaRepository:
 
+- **CustomerRepository**: Busca por taxId customizada
 - **ProductRepository**: Busca por SKU customizada
 - **UserRepository**: Busca por email customizada
 - **OrderRepository**: Operações CRUD padrão
@@ -392,7 +437,36 @@ public record OrderItemRequest(
 ) {}
 ```
 
-### 3.3 Mappers (MapStruct)
+### 3.4 Tratamento Global de Exceções
+
+#### **GlobalExceptionHandler**
+- **Propósito**: Tratamento centralizado de exceções da aplicação
+- **Anotação**: @RestControllerAdvice para interceptar exceções globalmente
+- **Exceções Tratadas**:
+  - `IllegalArgumentException`: Retorna HTTP 400 Bad Request
+  - `IllegalStateException`: Retorna HTTP 409 Conflict
+  - `MethodArgumentNotValidException`: Retorna HTTP 400 com detalhes da validação
+- **Resposta Padronizada**: ErrorResponse com status e mensagem
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+    }
+    
+    // Outros métodos de tratamento...
+}
+```
+
+### 3.5 Mappers (MapStruct)
+
+#### **CustomerMapper**
+- Converte entre Customer (domínio) e CustomerEntity (JPA)
+- @Mapper(componentModel = "spring") para injeção Spring
+- Preserva taxId e informações de contato
 
 #### **ProductMapper**
 - Converte entre Product (domínio) e ProductEntity (JPA)
@@ -510,11 +584,14 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 ## 8. Próximos Passos e Melhorias
 
 ### 8.1 Funcionalidades
-- [ ] CRUD completo de produtos
-- [ ] Listagem e busca de pedidos
+- [x] CRUD completo de produtos (criação e listagem)
+- [x] Listagem e busca de pedidos
 - [ ] Atualização de status de pedidos
-- [ ] Gestão de clientes
+- [x] Gestão de clientes (entidades e gateways)
 - [ ] Roles e permissões granulares
+- [ ] Busca de produtos por ID
+- [ ] Atualização e exclusão de produtos
+- [ ] Listagem de clientes
 
 ### 8.2 Infraestrutura
 - [ ] Configuração de profiles (dev, prod)
@@ -546,6 +623,7 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 - `GET /orders` - Listar todos os pedidos
 
 ### 9.3 Produtos
+- `GET /products` - Listar produtos com paginação
 - `POST /products` - Criar novo produto
 
 ### 9.4 Headers
@@ -575,7 +653,13 @@ curl -X POST http://localhost:8080/auth/login \
   }'
 ```
 
-### 10.3 Criar Pedido
+### 10.4 Listar Produtos com Paginação
+```bash
+curl -X GET "http://localhost:8080/products?page=0&size=10&sort=name,asc" \
+  -H "Content-Type: application/json"
+```
+
+### 10.5 Criar Pedido
 ```bash
 curl -X POST http://localhost:8080/orders \
   -H "Content-Type: application/json" \
@@ -599,6 +683,24 @@ curl -X POST http://localhost:8080/orders \
 
 ---
 
-**Versão**: 1.1  
+**Versão**: 1.2  
 **Data**: Março 2026  
 **Autor**: Sistema de Documentação Automática
+
+## Histórico de Atualizações
+
+### v1.2 (Março 2026)
+- Adicionado sistema de gestão de clientes
+- Implementado ListProductsUseCase com paginação
+- Adicionado GlobalExceptionHandler para tratamento centralizado de exceções
+- Reorganizada estrutura de use cases em diretórios create/ e list/
+- Atualizada documentação para refletir estrutura real do projeto
+
+### v1.1 (Fevereiro 2026)
+- Implementado sistema completo de pedidos
+- Adicionada gestão de produtos
+- Configurado sistema de autenticação JWT
+
+### v1.0 (Janeiro 2026)
+- Versão inicial com estrutura básica
+- Configuração Spring Boot e PostgreSQL
