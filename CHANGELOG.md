@@ -8,17 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Customer management system with complete CRUD operations
-- CustomerGateway interface for customer data access
-- CustomerEntity JPA entity with taxId (CPF/CNPJ) support
-- CustomerRepository for database operations
-- CustomerMapper for entity-domain conversion
-- ListUsersUseCase for user listing functionality
-- ProductConfig Spring configuration class
-- Enhanced OrderMapper with customer integration
-- Updated UserDataProvider with customer support
-- Improved JWT token adapter configuration
-- Enhanced security configuration for customer endpoints
+- **Customer Management System**
+  - Complete customer authentication and registration system
+  - CustomerController with POST /customers endpoint
+  - AuthenticateCustomerUseCase for customer login validation
+  - CreateCustomerUseCase for new customer registration
+  - CustomerRequest DTO with comprehensive validation
+  - CustomerGateway interface for data access operations
+  - CustomerConfig Spring configuration with dependency injection
+  - Enhanced SecurityConfig for customer endpoint access
+  - Customer domain model with password support
+  - CustomerEntity JPA entity with database mapping
+
+- **Documentation Workflow**
+  - Professional documentation management workflow
+  - Comprehensive templates for README, DOCUMENTACAO, and CHANGELOG
+  - Git automation scripts and Conventional Commits guidelines
+  - Pull Request templates and checklists
+  - Release automation scripts
+
+### Changed
+- Updated OrderRequest to include customer relationship
+- Enhanced customer authentication flow
+- Improved security configuration for customer endpoints
+- Updated project structure to support customer management
 
 ## [0.0.2-SNAPSHOT] - 2026-03-30
 

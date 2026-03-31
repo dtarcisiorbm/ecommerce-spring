@@ -616,16 +616,20 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 ### 9.1 Autenticação
 - `POST /auth/register` - Registrar novo usuário
 - `POST /auth/login` - Autenticar e obter token
+- `POST /auth/customer/login` - Autenticar cliente
 
-### 9.2 Pedidos
+### 9.2 Clientes
+- `POST /customers` - Criar novo cliente
+
+### 9.3 Pedidos
 - `POST /orders` - Criar novo pedido
 - `GET /orders` - Listar todos os pedidos
 
-### 9.3 Produtos
+### 9.4 Produtos
 - `GET /products` - Listar produtos com paginação
 - `POST /products` - Criar novo produto
 
-### 9.4 Headers
+### 9.5 Headers
 - `Authorization: Bearer <token>` - Para endpoints protegidos
 - `Content-Type: application/json` - Para requisições JSON
 
@@ -680,13 +684,43 @@ curl -X POST http://localhost:8080/orders \
   }'
 ```
 
+### 10.6 Criar Cliente
+```bash
+curl -X POST http://localhost:8080/customers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullName": "Maria Santos",
+    "email": "maria@example.com",
+    "taxId": "12345678901",
+    "password": "senhaSegura456"
+  }'
+```
+
+### 10.7 Login de Cliente
+```bash
+curl -X POST http://localhost:8080/auth/customer/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "maria@example.com",
+    "password": "senhaSegura456"
+  }'
+```
+
 ---
 
-**Versão**: 1.2  
+**Versão**: 1.3  
 **Data**: Março 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
+
+### v1.3 (Março 2026)
+- Implementado sistema completo de gestão de clientes
+- Adicionado CustomerController com endpoints de CRUD
+- Implementado AuthenticateCustomerUseCase para autenticação de clientes
+- Criado CustomerRequest DTO com validações
+- Adicionado workflow profissional de documentação
+- Implementados scripts de automação Git e Conventional Commits
 
 ### v1.2 (Março 2026)
 - Adicionado sistema de gestão de clientes

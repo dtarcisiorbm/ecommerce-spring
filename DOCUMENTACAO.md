@@ -39,7 +39,9 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   └── UserGateway.java
 │   └── useCases/                   # Casos de uso (regras de negócio)
 │       ├── create/                 # Casos de uso de criação
+│       │   ├── AuthenticateCustomerUseCase.java
 │       │   ├── AuthenticateUserUseCase.java
+│       │   ├── CreateCustomerUseCase.java
 │       │   ├── CreateOrderUseCase.java
 │       │   ├── CreateProductUseCase.java
 │       │   └── CreateUserUseCase.java
@@ -50,9 +52,11 @@ src/main/java/com/ecommerce_backend/backend/
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
 │   │   ├── AuthController.java
+│   │   ├── CustomerController.java
 │   │   ├── OrderController.java
 │   │   └── ProductController.java
 │   ├── dto/                        # Data Transfer Objects
+│   │   ├── CustomerRequest.java
 │   │   ├── LoginRequest.java
 │   │   ├── LoginResponse.java
 │   │   ├── OrderItemRequest.java
@@ -67,6 +71,7 @@ src/main/java/com/ecommerce_backend/backend/
 │       └── UserMapper.java
 └── infrastructure/                 # Camada de Infraestrutura
     ├── config/                     # Configurações Spring
+    │   ├── CustomerConfig.java
     │   ├── OrderConfig.java
     │   ├── ProductConfig.java
     │   ├── SecurityConfig.java
@@ -208,6 +213,16 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Validação**: Impede duplicação de SKU
 - **Fluxo**: Verifica SKU → Salva produto
 
+#### **CreateCustomerUseCase**
+- **Responsabilidade**: Registrar novos clientes
+- **Validações**: Email único, CPF/CNPJ único, senha mínima 6 caracteres
+- **Processo**: Criptografa senha → Salva cliente com role padrão "CUSTOMER"
+
+#### **AuthenticateCustomerUseCase**
+- **Responsabilidade**: Autenticar clientes
+- **Validações**: Credenciais válidas, conta ativa
+- **Fluxo**: Busca cliente → Verifica senha → Retorna cliente autenticado
+
 #### **CreateUserUseCase**
 - **Responsabilidade**: Registrar novos usuários
 - **Validações**: Email único, senha mínima 6 caracteres
@@ -249,9 +264,10 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Endpoints Públicos**: `/auth/login`, `/auth/register`
 - **Bean**: PasswordEncoder (BCrypt), AuthenticationManager
 
-#### **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
+#### **CustomerConfig.java** & **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
 - **Propósito**: Configuração de beans dos casos de uso
 - **Implementação**: Injeção de dependências via @Bean
+- **CustomerConfig**: Configura CreateCustomerUseCase e AuthenticateCustomerUseCase
 
 ### 2.2 Implementações Data Provider
 
@@ -382,6 +398,14 @@ Interfaces que estendem JpaRepository:
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Respostas**: HTTP 201 para registro, 200 com token para login
 
+#### **CustomerController**
+- **Endpoints**:
+  - `POST /customers`: Criar novo cliente
+  - `POST /auth/customer/login`: Autenticação de cliente
+- **Validações**: @Valid nos DTOs, Bean Validation
+- **Mapeamento**: Conversão manual de CustomerRequest para domínio Customer
+- **Respostas**: HTTP 201 Created para criação, 200 com token para login
+
 #### **OrderController**
 - **Endpoints**:
   - `POST /orders`: Criar novo pedido
@@ -397,6 +421,16 @@ Interfaces que estendem JpaRepository:
 - **Respostas**: HTTP 201 Created
 
 ### 3.2 DTOs (Data Transfer Objects)
+
+#### **CustomerRequest**
+```java
+public record CustomerRequest(
+    @NotBlank String fullName,
+    @NotBlank @Email String email,
+    @NotBlank String taxId,
+    @NotBlank @Size(min = 6) String password
+) {}
+```
 
 #### **LoginRequest**
 ```java
@@ -538,7 +572,23 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 5. Retorna token no LoginResponse
 6. Requisições futuras incluem `Authorization: Bearer <token>`
 
-### 5.3 Criação de Pedido
+### 5.3 Registro de Cliente
+1. Cliente envia POST `/customers`
+2. CustomerController valida DTO via Bean Validation
+3. CreateCustomerUseCase verifica email e CPF/CNPJ duplicados
+4. BCryptHasherAdapter criptografa senha
+5. CustomerDataProvider persiste cliente
+6. Retorna HTTP 201 Created
+
+### 5.4 Login de Cliente
+1. Cliente envia POST `/auth/customer/login`
+2. CustomerAuthController valida credenciais
+3. AuthenticateCustomerUseCase verifica cliente e senha
+4. JwtTokenAdapter gera token JWT
+5. Retorna token no LoginResponse
+6. Requisições futuras incluem `Authorization: Bearer <token>`
+
+### 5.5 Criação de Pedido
 1. Cliente autenticado envia dados do pedido
 2. CreateOrderUseCase valida estoque de cada item
 3. Define status PENDING e data atual
