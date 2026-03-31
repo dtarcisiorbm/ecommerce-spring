@@ -10,4 +10,7 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     // Método necessário para a autenticação e UserDataProvider
     Optional<UserEntity> findByEmail(String email);
+
+
+
 }

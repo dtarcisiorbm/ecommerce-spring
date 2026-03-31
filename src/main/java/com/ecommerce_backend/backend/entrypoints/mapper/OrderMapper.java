@@ -9,9 +9,13 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
-    // O MapStruct entende automaticamente como converter a lista de itens
-    // se o OrderItemMapper também estiver no contexto.
+
+    // Mapeia o customerId da entidade para o id dentro do objeto Customer do domínio
+    @Mapping(target = "customer.id", source = "customerId")
     Order toDomain(OrderEntity entity);
+
+    // Mapeia o id do objeto Customer do domínio para o campo customerId da entidade
+    @Mapping(target = "customerId", source = "customer.id")
     OrderEntity toEntity(Order domain);
 }
 

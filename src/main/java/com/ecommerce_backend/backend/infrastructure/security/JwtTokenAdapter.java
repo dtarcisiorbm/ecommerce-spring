@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 @Service
 public class JwtTokenAdapter implements TokenServiceGateway {
@@ -26,7 +27,7 @@ public class JwtTokenAdapter implements TokenServiceGateway {
             return JWT.create()
                     .withIssuer("ecommerce-backend")
                     .withSubject(user.email())
-                    .withExpiresAt(genExpirationDate())
+                    .withExpiresAt(Date.from(genExpirationDate()))
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
