@@ -31,9 +31,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/customer/auth/**").permitAll()
+                        // Endpoints públicos de autenticação
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/customer/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/customer/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/validate").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").authenticated()
+                        
+                        // Endpoints de documentação (se houver)
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        
+                        // Demais endpoints requerem autenticação
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
