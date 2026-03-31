@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -22,7 +23,7 @@ public class OrderEntity {
 
     // Relacionamento com Customer (usando o ID do cliente conforme o domínio)
     @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    private UUID customerId;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItemEntity> items;

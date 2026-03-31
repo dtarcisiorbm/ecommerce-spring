@@ -9,10 +9,11 @@ import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class JwtTokenAdapter implements TokenServiceGateway {
@@ -21,13 +22,17 @@ public class JwtTokenAdapter implements TokenServiceGateway {
     private String secret;
 
     @Override
+// Local: src/main/java/com/ecommerce_backend/backend/infrastructure/security/JwtTokenAdapter.java
+
     public String generateToken(User user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer("ecommerce-backend")
                     .withSubject(user.email())
-                    .withExpiresAt(Date.from(genExpirationDate()))
+
+                    .withClaim("roles", (Date) new ArrayList<>(user.roles()).stream().toList())
+                    .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
@@ -47,8 +52,21 @@ public class JwtTokenAdapter implements TokenServiceGateway {
             return "";
         }
     }
-
-    private Instant genExpirationDate() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    @Override
+    public List<String> getRoles(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.require(algorithm)
+                    .withIssuer("ecommerce-backend")
+                    .build()
+                    .verify(token)
+                    .getClaim("roles")
+                    .asList(String.class);
+        } catch (Exception exception) {
+            return List.of();
+        }
+    }
+    private Date genExpirationDate() {
+        return Date.from(LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00")));
     }
 }

@@ -1,7 +1,11 @@
 package com.ecommerce_backend.backend.core.domain;
+
+import java.util.UUID;
+
 public record Customer(
-        Long id,
+        UUID id,
         String fullName,
         String email,
-        String taxId // CPF/CNPJ
+        String taxId,
+        String password // Adicionado campo de senha
 ) {}

@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
-public class AuthController {
+public class UserAuthController {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final TokenServiceGateway tokenService; // Injeção do novo serviço
     private final CreateUserUseCase createUserUseCase;
-    public AuthController(AuthenticateUserUseCase authenticateUserUseCase, TokenServiceGateway tokenService,CreateUserUseCase createUserUseCase) {
+    public UserAuthController(AuthenticateUserUseCase authenticateUserUseCase, TokenServiceGateway tokenService, CreateUserUseCase createUserUseCase) {
         this.authenticateUserUseCase = authenticateUserUseCase;
         this.tokenService = tokenService;
         this.createUserUseCase=createUserUseCase;

@@ -1,4 +1,4 @@
-package com.ecommerce_backend.backend.core.useCases.create;
+package com.ecommerce_backend.backend.core.useCases.auth;
 
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.PasswordHasherGateway;

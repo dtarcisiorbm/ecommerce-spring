@@ -47,7 +47,7 @@ public class OrderController {
         // 2. Mapeamento para o Domínio Order
         var orderDomain = new Order(
                 null,
-                new Customer(request.customerId(), null, null, null),
+                new Customer(request.customerId(), null, null, null, null),
                 items,
                 null,
                 null
