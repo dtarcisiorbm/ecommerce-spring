@@ -1,0 +1,240 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    types: [ opened, synchronize, reopened ]
+
+env:
+  JAVA_VERSION: '21'
+  DISTRIBUTION: 'temurin'
+
+jobs:
+  validate-commits:
+    name: Validate Commits
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Validate Conventional Commits
+        uses: wagoid/commitlint-github-action@v5
+        with:
+          configFile: .commitlintrc.js
+          failOnWarnings: true
+          
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Run Checkstyle
+        run: ./mvnw checkstyle:check
+        
+      - name: Run SpotBugs
+        run: ./mvnw spotbugs:check
+        
+      - name: Upload code quality results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: code-quality-reports
+          path: |
+            target/checkstyle-result.xml
+            target/spotbugsXml.xml
+          retention-days: 7
+          
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        java-version: ['17', '21']
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: ${{ env.DISTRIBUTION }}
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-${{ matrix.java-version }}
+          
+      - name: Run unit tests
+        run: ./mvnw clean test
+        
+      - name: Run integration tests
+        run: ./mvnw verify -P integration-tests
+        
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Tests - Java ${{ matrix.java-version }}
+          path: |
+            target/surefire-reports/*.xml
+            target/failsafe-reports/*.xml
+          reporter: java-junit
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-java-${{ matrix.java-version }}
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 7
+          
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [validate-commits, code-quality]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Build application
+        run: ./mvnw clean package -DskipTests
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: target/*.jar
+          retention-days: 7
+          
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [test]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          
+      - name: Run OWASP Dependency Check
+        run: ./mvnw org.owasp:dependency-check:check
+        
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: dependency-check-results
+          path: target/dependency-check-report.html
+          retention-days: 7
+          
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check README.md
+        run: |
+          if [[ ! -f README.md ]]; then
+            echo "❌ README.md not found"
+            exit 1
+          fi
+          echo "✅ README.md exists"
+          
+      - name: Check CHANGELOG.md
+        run: |
+          if [[ ! -f CHANGELOG.md ]]; then
+            echo "❌ CHANGELOG.md not found"
+            exit 1
+          fi
+          echo "✅ CHANGELOG.md exists"
+          
+      - name: Validate CHANGELOG format
+        run: |
+          # Verifica se há seção Unreleased
+          if ! grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            echo "❌ CHANGELOG.md missing [Unreleased] section"
+            exit 1
+          fi
+          echo "✅ CHANGELOG.md has [Unreleased] section"
+          
+      - name: Check DOCUMENTACAO.md
+        run: |
+          if [[ ! -f DOCUMENTACAO.md ]]; then
+            echo "❌ DOCUMENTACAO.md not found"
+            exit 1
+          fi
+          echo "✅ DOCUMENTACAO.md exists"
+          
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [validate-commits, code-quality, test, build, security-scan, documentation]
+    if: always()
+    
+    steps:
+      - name: Notify success
+        if: ${{ needs.test.result == 'success' && needs.build.result == 'success' }}
+        run: |
+          echo "✅ All checks passed!"
+          echo "🎉 PR is ready for merge"
+          
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Some checks failed!"
+          echo "🔍 Check the workflow logs for details"
+          echo "📊 PR Status:"
+          echo "  - Commits: ${{ needs.validate-commits.result }}"
+          echo "  - Code Quality: ${{ needs.code-quality.result }}"
+          echo "  - Tests: ${{ needs.test.result }}"
+          echo "  - Build: ${{ needs.build.result }}"
+          echo "  - Security: ${{ needs.security-scan.result }}"
+          echo "  - Documentation: ${{ needs.documentation.result }}"
