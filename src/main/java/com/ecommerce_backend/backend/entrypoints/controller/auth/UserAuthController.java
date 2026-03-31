@@ -1,8 +1,8 @@
-package com.ecommerce_backend.backend.entrypoints.controller;
+package com.ecommerce_backend.backend.entrypoints.controller.auth;
 
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
-import com.ecommerce_backend.backend.core.useCases.create.AuthenticateUserUseCase;
+import com.ecommerce_backend.backend.core.useCases.auth.AuthenticateUserUseCase;
 import com.ecommerce_backend.backend.core.useCases.create.CreateUserUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.LoginRequest;
 import com.ecommerce_backend.backend.entrypoints.dto.LoginResponse;
