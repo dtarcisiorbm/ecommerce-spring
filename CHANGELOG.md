@@ -8,15 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Order management endpoints with OrderController
-- Order listing functionality with ListOrdersUseCase
-- Product management with ProductController
-- OrderRequest and OrderItemRequest DTOs for order creation
-- OrderConfig Spring configuration
-
-### Fixed
-- OrderItemRequest visibility issue - extracted to separate public class file
-- Cannot access 'unitPrice()' error in OrderController
+- Customer management system with complete CRUD operations
+- CustomerGateway interface for customer data access
+- CustomerEntity JPA entity with taxId (CPF/CNPJ) support
+- CustomerRepository for database operations
+- CustomerMapper for entity-domain conversion
+- ListUsersUseCase for user listing functionality
+- ProductConfig Spring configuration class
+- Enhanced OrderMapper with customer integration
+- Updated UserDataProvider with customer support
+- Improved JWT token adapter configuration
+- Enhanced security configuration for customer endpoints
 
 ## [0.0.2-SNAPSHOT] - 2026-03-30
 

@@ -31,6 +31,7 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   ├── Product.java
 │   │   └── User.java
 │   ├── gateway/                    # Interfaces de integração
+│   │   ├── CustomerGateway.java
 │   │   ├── OrderGateway.java
 │   │   ├── PasswordHasherGateway.java
 │   │   ├── ProductGateway.java
@@ -42,7 +43,8 @@ src/main/java/com/ecommerce_backend/backend/
 │       ├── CreateProductUseCase.java
 │       ├── CreateUserUseCase.java
 │       └── list/
-│           └── ListOrdersUseCase.java
+│           ├── ListOrdersUseCase.java
+│           └── ListUsersUseCase.java
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
 │   │   ├── AuthController.java
@@ -55,12 +57,14 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   ├── OrderRequest.java
 │   │   └── OrderItemRequest.java
 │   └── mapper/                     # Mapeamento de DTOs
+│       ├── CustomerMapper.java
 │       ├── OrderMapper.java
 │       ├── ProductMapper.java
 │       └── UserMapper.java
 └── infrastructure/                 # Camada de Infraestrutura
     ├── config/                     # Configurações Spring
     │   ├── OrderConfig.java
+    │   ├── ProductConfig.java
     │   ├── SecurityConfig.java
     │   └── UserConfig.java
     ├── dataprovider/               # Implementações dos Gateways
@@ -69,11 +73,13 @@ src/main/java/com/ecommerce_backend/backend/
     │   └── UserDataProvider.java
     ├── persistence/                 # Entidades JPA
     │   └── entity/
+    │       ├── CustomerEntity.java
     │       ├── OrderEntity.java
     │       ├── OrderItemEntity.java
     │       ├── ProductEntity.java
     │       └── UserEntity.java
     ├── repository/                 # Repositórios Spring Data
+    │   ├── CustomerRepository.java
     │   ├── OrderRepository.java
     │   ├── ProductRepository.java
     │   └── UserRepository.java
@@ -185,6 +191,7 @@ public record User(
 Definem contratos para integração com infraestrutura, seguindo o princípio Dependency Inversion:
 
 - **ProductGateway**: Operações com produtos (save, findBySku, findById)
+- **CustomerGateway**: Operações com clientes (save, findById, findByTaxId)
 - **UserGateway**: Operações com usuários (save, findByEmail)
 - **OrderGateway**: Operações com pedidos (save)
 - **PasswordHasherGateway**: Criptografia de senhas (hash, matches)
@@ -217,6 +224,11 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Retorno**: Lista de Order com todos os itens
 - **Uso**: Endpoint GET `/orders` para consulta de pedidos
 
+#### **ListUsersUseCase**
+- **Responsabilidade**: Listar todos os usuários do sistema
+- **Retorno**: Lista de User com informações básicas
+- **Uso**: Suporte a funcionalidades administrativas
+
 ## 2. Camada de Infraestrutura
 
 ### 2.1 Configurações Spring
@@ -227,7 +239,7 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Endpoints Públicos**: `/auth/login`, `/auth/register`
 - **Bean**: PasswordEncoder (BCrypt), AuthenticationManager
 
-#### **UserConfig.java** & **OrderConfig.java**
+#### **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
 - **Propósito**: Configuração de beans dos casos de uso
 - **Implementação**: Injeção de dependências via @Bean
 
@@ -250,6 +262,28 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Relacionamento**: Vincula OrderItems ao Order pai
 
 ### 2.3 Entidades JPA
+
+#### **CustomerEntity**
+```java
+@Entity
+@Table(name = "customers")
+public class CustomerEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String fullName;
+    
+    @Column(nullable = false, unique = true)
+    private String email;
+    
+    @Column(name = "tax_id", nullable = false, unique = true)
+    private String taxId; // CPF/CNPJ
+}
+```
+- **Propósito**: Persistência de dados de clientes
+- **Validações**: Email e taxId únicos
+- **Campos**: ID auto-generated, nome completo, email, CPF/CNPJ
 
 #### **ProductEntity**
 ```java
@@ -304,6 +338,7 @@ public class UserEntity {
 
 Interfaces que estendem JpaRepository:
 
+- **CustomerRepository**: Busca por taxId customizada
 - **ProductRepository**: Busca por SKU customizada
 - **UserRepository**: Busca por email customizada
 - **OrderRepository**: Operações CRUD padrão
@@ -393,6 +428,11 @@ public record OrderItemRequest(
 ```
 
 ### 3.3 Mappers (MapStruct)
+
+#### **CustomerMapper**
+- Converte entre Customer (domínio) e CustomerEntity (JPA)
+- @Mapper(componentModel = "spring") para injeção Spring
+- Preserva taxId e informações de contato
 
 #### **ProductMapper**
 - Converte entre Product (domínio) e ProductEntity (JPA)
