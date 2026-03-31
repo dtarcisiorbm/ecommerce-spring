@@ -520,7 +520,6 @@ docker-compose up -d
 ./mvnw clean package
 java -jar target/backend-0.0.1-SNAPSHOT.jar
 ```
-
 ## 5. Fluxos de Negócio
 
 ### 5.1 Registro de Usuário
