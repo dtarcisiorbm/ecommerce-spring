@@ -1,0 +1,149 @@
+{
+	"_type": "export",
+	"__export_format": 4,
+	"__export_date": "2026-03-31T17:00:00.000Z",
+	"resources": [
+		{
+			"_id": "wrk_ecommerce_v3",
+			"parentId": null,
+			"name": "E-commerce API - Configuração Final",
+			"scope": "collection",
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_local",
+			"parentId": "wrk_ecommerce_v3",
+			"name": "Desenvolvimento Local",
+			"data": {
+				"base_url": "http://localhost:8080",
+				"admin_token": "",
+				"customer_token": "",
+				"customer_id": ""
+			},
+			"_type": "environment"
+		},
+		{
+			"_id": "fld_admin_auth",
+			"parentId": "wrk_ecommerce_v3",
+			"name": "1. Admin Auth (/auth)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_admin_reg",
+			"parentId": "fld_admin_auth",
+			"url": "{{ _.base_url }}/auth/register",
+			"name": "Registar Admin",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" },
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Admin Tarcisio\",\n  \"email\": \"admin@loja.com\",\n  \"password\": \"admin123\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_admin_login",
+			"parentId": "fld_admin_auth",
+			"url": "{{ _.base_url }}/auth/login",
+			"name": "Login Admin",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"email\": \"admin@loja.com\",\n  \"password\": \"admin123\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "fld_customer_auth",
+			"parentId": "wrk_ecommerce_v3",
+			"name": "2. Customer Auth (/customer/auth)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_cust_reg",
+			"parentId": "fld_customer_auth",
+			"url": "{{ _.base_url }}/customer/auth/register",
+			"name": "Registar Cliente",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"fullName\": \"João Cliente\",\n  \"email\": \"joao@cliente.com\",\n  \"taxId\": \"11122233344\",\n  \"password\": \"cliente123\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_cust_login",
+			"parentId": "fld_customer_auth",
+			"url": "{{ _.base_url }}/customer/auth/login",
+			"name": "Login Cliente",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"email\": \"joao@cliente.com\",\n  \"password\": \"cliente123\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "fld_core",
+			"parentId": "wrk_ecommerce_v3",
+			"name": "3. Produtos e Pedidos",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_create_prod",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products",
+			"name": "Criar Produto (Admin)",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Teclado Gamer\",\n  \"sku\": \"TEC-001\",\n  \"price\": 150.00,\n  \"stock\": 10\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_create_order",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/orders",
+			"name": "Criar Pedido (Cliente)",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"customerId\": {{ _.customer_id }},\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"quantity\": 1,\n      \"unitPrice\": 150.00\n    }\n  ]\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_list_prods",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products",
+			"name": "Listar Produtos",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		}
+	]
+}
