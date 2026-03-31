@@ -105,10 +105,11 @@ src/main/java/com/ecommerce_backend/backend/
 #### **Customer.java**
 ```java
 public record Customer(
-    Long id,
+    UUID id,
     String fullName,
     String email,
-    String taxId // CPF/CNPJ
+    String taxId, // CPF/CNPJ
+    String password // Senha criptografada
 ) {}
 ```
 - **Propósito**: Representa um cliente do sistema
@@ -200,7 +201,7 @@ public record User(
 Definem contratos para integração com infraestrutura, seguindo o princípio Dependency Inversion:
 
 - **ProductGateway**: Operações com produtos (save, findBySku, findById)
-- **CustomerGateway**: Operações com clientes (save, findById, findByTaxId)
+- **CustomerGateway**: Operações com clientes (save, findById, findByEmail, deleteById, findAll, update)
 - **UserGateway**: Operações com usuários (save, findByEmail)
 - **OrderGateway**: Operações com pedidos (save)
 - **PasswordHasherGateway**: Criptografia de senhas (hash, matches)
@@ -222,6 +223,27 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Responsabilidade**: Autenticar clientes
 - **Validações**: Credenciais válidas, conta ativa
 - **Fluxo**: Busca cliente → Verifica senha → Retorna cliente autenticado
+
+#### **DeleteCustomerUseCase**
+- **Responsabilidade**: Excluir clientes do sistema
+- **Validações**: Verifica existência do cliente
+- **Processo**: Busca cliente → Exclui permanentemente
+
+#### **FindCustomerByIdUseCase**
+- **Responsabilidade**: Buscar cliente por ID
+- **Validações**: ID válido
+- **Retorno**: Optional<Customer> com dados do cliente
+
+#### **UpdateCustomerUseCase**
+- **Responsabilidade**: Atualizar dados do cliente
+- **Validações**: Cliente existe, email único (se alterado)
+- **Processo**: Busca cliente → Atualiza dados → Salva
+
+#### **ListCustomersUseCase**
+- **Responsabilidade**: Listar clientes com paginação
+- **Retorno**: Page<Customer> com paginação configurável
+- **Parâmetros**: Pageable para controle de paginação
+- **Uso**: Endpoint GET `/customers` com suporte a paginação
 
 #### **CreateUserUseCase**
 - **Responsabilidade**: Registrar novos usuários
@@ -294,8 +316,8 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 @Entity
 @Table(name = "customers")
 public class CustomerEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     
     @Column(nullable = false)
     private String fullName;
@@ -305,11 +327,14 @@ public class CustomerEntity {
     
     @Column(name = "tax_id", nullable = false, unique = true)
     private String taxId; // CPF/CNPJ
+    
+    @Column(nullable = false)
+    private String password; // Campo para hash BCrypt
 }
 ```
 - **Propósito**: Persistência de dados de clientes
 - **Validações**: Email e taxId únicos
-- **Campos**: ID auto-generated, nome completo, email, CPF/CNPJ
+- **Campos**: UUID auto-generated, nome completo, email, CPF/CNPJ, senha criptografada
 
 #### **ProductEntity**
 ```java
@@ -364,7 +389,7 @@ public class UserEntity {
 
 Interfaces que estendem JpaRepository:
 
-- **CustomerRepository**: Busca por taxId customizada
+- **CustomerRepository**: Busca por email customizada, operações CRUD completas
 - **ProductRepository**: Busca por SKU customizada
 - **UserRepository**: Busca por email customizada
 - **OrderRepository**: Operações CRUD padrão
@@ -401,10 +426,14 @@ Interfaces que estendem JpaRepository:
 #### **CustomerController**
 - **Endpoints**:
   - `POST /customers`: Criar novo cliente
+  - `GET /customers`: Listar clientes com paginação
+  - `GET /customers/{id}`: Buscar cliente por ID
+  - `PUT /customers/{id}`: Atualizar dados do cliente
+  - `DELETE /customers/{id}`: Excluir cliente
   - `POST /auth/customer/login`: Autenticação de cliente
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Mapeamento**: Conversão manual de CustomerRequest para domínio Customer
-- **Respostas**: HTTP 201 Created para criação, 200 com token para login
+- **Respostas**: HTTP 201 Created para criação, 200 para consultas e atualizações, 204 para exclusão
 
 #### **OrderController**
 - **Endpoints**:

@@ -39,7 +39,9 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   └── UserGateway.java
 │   └── useCases/                   # Casos de uso (regras de negócio)
 │       ├── create/                 # Casos de uso de criação
+│       │   ├── AuthenticateCustomerUseCase.java
 │       │   ├── AuthenticateUserUseCase.java
+│       │   ├── CreateCustomerUseCase.java
 │       │   ├── CreateOrderUseCase.java
 │       │   ├── CreateProductUseCase.java
 │       │   └── CreateUserUseCase.java
@@ -50,9 +52,11 @@ src/main/java/com/ecommerce_backend/backend/
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
 │   │   ├── AuthController.java
+│   │   ├── CustomerController.java
 │   │   ├── OrderController.java
 │   │   └── ProductController.java
 │   ├── dto/                        # Data Transfer Objects
+│   │   ├── CustomerRequest.java
 │   │   ├── LoginRequest.java
 │   │   ├── LoginResponse.java
 │   │   ├── OrderItemRequest.java
@@ -67,6 +71,7 @@ src/main/java/com/ecommerce_backend/backend/
 │       └── UserMapper.java
 └── infrastructure/                 # Camada de Infraestrutura
     ├── config/                     # Configurações Spring
+    │   ├── CustomerConfig.java
     │   ├── OrderConfig.java
     │   ├── ProductConfig.java
     │   ├── SecurityConfig.java
@@ -100,10 +105,11 @@ src/main/java/com/ecommerce_backend/backend/
 #### **Customer.java**
 ```java
 public record Customer(
-    Long id,
+    UUID id,
     String fullName,
     String email,
-    String taxId // CPF/CNPJ
+    String taxId, // CPF/CNPJ
+    String password // Senha criptografada
 ) {}
 ```
 - **Propósito**: Representa um cliente do sistema
@@ -195,7 +201,7 @@ public record User(
 Definem contratos para integração com infraestrutura, seguindo o princípio Dependency Inversion:
 
 - **ProductGateway**: Operações com produtos (save, findBySku, findById)
-- **CustomerGateway**: Operações com clientes (save, findById, findByTaxId)
+- **CustomerGateway**: Operações com clientes (save, findById, findByEmail, deleteById, findAll, update)
 - **UserGateway**: Operações com usuários (save, findByEmail)
 - **OrderGateway**: Operações com pedidos (save)
 - **PasswordHasherGateway**: Criptografia de senhas (hash, matches)
@@ -207,6 +213,37 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Responsabilidade**: Criar novos produtos
 - **Validação**: Impede duplicação de SKU
 - **Fluxo**: Verifica SKU → Salva produto
+
+#### **CreateCustomerUseCase**
+- **Responsabilidade**: Registrar novos clientes
+- **Validações**: Email único, CPF/CNPJ único, senha mínima 6 caracteres
+- **Processo**: Criptografa senha → Salva cliente com role padrão "CUSTOMER"
+
+#### **AuthenticateCustomerUseCase**
+- **Responsabilidade**: Autenticar clientes
+- **Validações**: Credenciais válidas, conta ativa
+- **Fluxo**: Busca cliente → Verifica senha → Retorna cliente autenticado
+
+#### **DeleteCustomerUseCase**
+- **Responsabilidade**: Excluir clientes do sistema
+- **Validações**: Verifica existência do cliente
+- **Processo**: Busca cliente → Exclui permanentemente
+
+#### **FindCustomerByIdUseCase**
+- **Responsabilidade**: Buscar cliente por ID
+- **Validações**: ID válido
+- **Retorno**: Optional<Customer> com dados do cliente
+
+#### **UpdateCustomerUseCase**
+- **Responsabilidade**: Atualizar dados do cliente
+- **Validações**: Cliente existe, email único (se alterado)
+- **Processo**: Busca cliente → Atualiza dados → Salva
+
+#### **ListCustomersUseCase**
+- **Responsabilidade**: Listar clientes com paginação
+- **Retorno**: Page<Customer> com paginação configurável
+- **Parâmetros**: Pageable para controle de paginação
+- **Uso**: Endpoint GET `/customers` com suporte a paginação
 
 #### **CreateUserUseCase**
 - **Responsabilidade**: Registrar novos usuários
@@ -249,9 +286,10 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Endpoints Públicos**: `/auth/login`, `/auth/register`
 - **Bean**: PasswordEncoder (BCrypt), AuthenticationManager
 
-#### **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
+#### **CustomerConfig.java** & **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
 - **Propósito**: Configuração de beans dos casos de uso
 - **Implementação**: Injeção de dependências via @Bean
+- **CustomerConfig**: Configura CreateCustomerUseCase e AuthenticateCustomerUseCase
 
 ### 2.2 Implementações Data Provider
 
@@ -278,8 +316,8 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 @Entity
 @Table(name = "customers")
 public class CustomerEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     
     @Column(nullable = false)
     private String fullName;
@@ -289,11 +327,14 @@ public class CustomerEntity {
     
     @Column(name = "tax_id", nullable = false, unique = true)
     private String taxId; // CPF/CNPJ
+    
+    @Column(nullable = false)
+    private String password; // Campo para hash BCrypt
 }
 ```
 - **Propósito**: Persistência de dados de clientes
 - **Validações**: Email e taxId únicos
-- **Campos**: ID auto-generated, nome completo, email, CPF/CNPJ
+- **Campos**: UUID auto-generated, nome completo, email, CPF/CNPJ, senha criptografada
 
 #### **ProductEntity**
 ```java
@@ -348,7 +389,7 @@ public class UserEntity {
 
 Interfaces que estendem JpaRepository:
 
-- **CustomerRepository**: Busca por taxId customizada
+- **CustomerRepository**: Busca por email customizada, operações CRUD completas
 - **ProductRepository**: Busca por SKU customizada
 - **UserRepository**: Busca por email customizada
 - **OrderRepository**: Operações CRUD padrão
@@ -377,26 +418,48 @@ Interfaces que estendem JpaRepository:
 
 #### **AuthController**
 - **Endpoints**:
-    - `POST /auth/register`: Registro de novos usuários
-    - `POST /auth/login`: Autenticação e geração de token
+  - `POST /auth/register`: Registro de novos usuários
+  - `POST /auth/login`: Autenticação e geração de token
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Respostas**: HTTP 201 para registro, 200 com token para login
 
+#### **CustomerController**
+- **Endpoints**:
+  - `POST /customers`: Criar novo cliente
+  - `GET /customers`: Listar clientes com paginação
+  - `GET /customers/{id}`: Buscar cliente por ID
+  - `PUT /customers/{id}`: Atualizar dados do cliente
+  - `DELETE /customers/{id}`: Excluir cliente
+  - `POST /auth/customer/login`: Autenticação de cliente
+- **Validações**: @Valid nos DTOs, Bean Validation
+- **Mapeamento**: Conversão manual de CustomerRequest para domínio Customer
+- **Respostas**: HTTP 201 Created para criação, 200 para consultas e atualizações, 204 para exclusão
+
 #### **OrderController**
 - **Endpoints**:
-    - `POST /orders`: Criar novo pedido
-    - `GET /orders`: Listar todos os pedidos
+  - `POST /orders`: Criar novo pedido
+  - `GET /orders`: Listar todos os pedidos
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Mapeamento**: Conversão manual de DTO para domínio
 - **Respostas**: HTTP 201 Created para criação, 200 com lista para consulta
 
 #### **ProductController**
 - **Endpoints**:
-    - `POST /products`: Criar novo produto
+  - `POST /products`: Criar novo produto
 - **Validações**: @Valid nos DTOs, Bean Validation
 - **Respostas**: HTTP 201 Created
 
 ### 3.2 DTOs (Data Transfer Objects)
+
+#### **CustomerRequest**
+```java
+public record CustomerRequest(
+    @NotBlank String fullName,
+    @NotBlank @Email String email,
+    @NotBlank String taxId,
+    @NotBlank @Size(min = 6) String password
+) {}
+```
 
 #### **LoginRequest**
 ```java
@@ -443,9 +506,9 @@ public record OrderItemRequest(
 - **Propósito**: Tratamento centralizado de exceções da aplicação
 - **Anotação**: @RestControllerAdvice para interceptar exceções globalmente
 - **Exceções Tratadas**:
-    - `IllegalArgumentException`: Retorna HTTP 400 Bad Request
-    - `IllegalStateException`: Retorna HTTP 409 Conflict
-    - `MethodArgumentNotValidException`: Retorna HTTP 400 com detalhes da validação
+  - `IllegalArgumentException`: Retorna HTTP 400 Bad Request
+  - `IllegalStateException`: Retorna HTTP 409 Conflict
+  - `MethodArgumentNotValidException`: Retorna HTTP 400 com detalhes da validação
 - **Resposta Padronizada**: ErrorResponse com status e mensagem
 
 ```java
@@ -538,7 +601,23 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 5. Retorna token no LoginResponse
 6. Requisições futuras incluem `Authorization: Bearer <token>`
 
-### 5.3 Criação de Pedido
+### 5.3 Registro de Cliente
+1. Cliente envia POST `/customers`
+2. CustomerController valida DTO via Bean Validation
+3. CreateCustomerUseCase verifica email e CPF/CNPJ duplicados
+4. BCryptHasherAdapter criptografa senha
+5. CustomerDataProvider persiste cliente
+6. Retorna HTTP 201 Created
+
+### 5.4 Login de Cliente
+1. Cliente envia POST `/auth/customer/login`
+2. CustomerAuthController valida credenciais
+3. AuthenticateCustomerUseCase verifica cliente e senha
+4. JwtTokenAdapter gera token JWT
+5. Retorna token no LoginResponse
+6. Requisições futuras incluem `Authorization: Bearer <token>`
+
+### 5.5 Criação de Pedido
 1. Cliente autenticado envia dados do pedido
 2. CreateOrderUseCase valida estoque de cada item
 3. Define status PENDING e data atual
@@ -616,20 +695,16 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 ### 9.1 Autenticação
 - `POST /auth/register` - Registrar novo usuário
 - `POST /auth/login` - Autenticar e obter token
-- `POST /auth/customer/login` - Autenticar cliente
 
-### 9.2 Clientes
-- `POST /customers` - Criar novo cliente
-
-### 9.3 Pedidos
+### 9.2 Pedidos
 - `POST /orders` - Criar novo pedido
 - `GET /orders` - Listar todos os pedidos
 
-### 9.4 Produtos
+### 9.3 Produtos
 - `GET /products` - Listar produtos com paginação
 - `POST /products` - Criar novo produto
 
-### 9.5 Headers
+### 9.4 Headers
 - `Authorization: Bearer <token>` - Para endpoints protegidos
 - `Content-Type: application/json` - Para requisições JSON
 
@@ -684,43 +759,13 @@ curl -X POST http://localhost:8080/orders \
   }'
 ```
 
-### 10.6 Criar Cliente
-```bash
-curl -X POST http://localhost:8080/customers \
-  -H "Content-Type: application/json" \
-  -d '{
-    "fullName": "Maria Santos",
-    "email": "maria@example.com",
-    "taxId": "12345678901",
-    "password": "senhaSegura456"
-  }'
-```
-
-### 10.7 Login de Cliente
-```bash
-curl -X POST http://localhost:8080/auth/customer/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "maria@example.com",
-    "password": "senhaSegura456"
-  }'
-```
-
 ---
 
-**Versão**: 1.3  
+**Versão**: 1.2  
 **Data**: Março 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
-
-### v1.3 (Março 2026)
-- Implementado sistema completo de gestão de clientes
-- Adicionado CustomerController com endpoints de CRUD
-- Implementado AuthenticateCustomerUseCase para autenticação de clientes
-- Criado CustomerRequest DTO com validações
-- Adicionado workflow profissional de documentação
-- Implementados scripts de automação Git e Conventional Commits
 
 ### v1.2 (Março 2026)
 - Adicionado sistema de gestão de clientes

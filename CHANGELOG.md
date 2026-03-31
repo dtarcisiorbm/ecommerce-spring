@@ -8,30 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Customer Management System**
-  - Complete customer authentication and registration system
-  - CustomerController with POST /customers endpoint
-  - AuthenticateCustomerUseCase for customer login validation
-  - CreateCustomerUseCase for new customer registration
-  - CustomerRequest DTO with comprehensive validation
-  - CustomerGateway interface for data access operations
-  - CustomerConfig Spring configuration with dependency injection
-  - Enhanced SecurityConfig for customer endpoint access
-  - Customer domain model with password support
-  - CustomerEntity JPA entity with database mapping
+- **Customer CRUD Operations**
+  - Complete CRUD operations for customer management
+  - DeleteCustomerUseCase for customer deletion
+  - FindCustomerByIdUseCase for customer search by ID
+  - UpdateCustomerUseCase for customer data updates
+  - ListCustomersUseCase for paginated customer listing
+  - Enhanced CustomerGateway with full CRUD interface
+  - CustomerDataProvider implementation with all operations
 
-- **Documentation Workflow**
-  - Professional documentation management workflow
-  - Comprehensive templates for README, DOCUMENTACAO, and CHANGELOG
-  - Git automation scripts and Conventional Commits guidelines
-  - Pull Request templates and checklists
-  - Release automation scripts
+### Fixed
+- **Customer Repository Type Mismatch**
+  - Corrected CustomerRepository ID type from Long to UUID
+  - Fixed deleteById method parameter type compatibility
+  - Added UUID import to CustomerRepository interface
 
 ### Changed
-- Updated OrderRequest to include customer relationship
-- Enhanced customer authentication flow
-- Improved security configuration for customer endpoints
-- Updated project structure to support customer management
+- Updated Customer domain model to use UUID as ID type
+- Enhanced customer data provider with comprehensive operations
+- Improved type consistency across customer-related components
 
 ## [0.0.2-SNAPSHOT] - 2026-03-30
 
