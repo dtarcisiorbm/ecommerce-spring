@@ -1,24 +1,40 @@
 package com.ecommerce_backend.backend.entrypoints.controller;
 
 import com.ecommerce_backend.backend.core.domain.Customer;
-import com.ecommerce_backend.backend.core.gateway.CustomerGateway;
+import com.ecommerce_backend.backend.core.useCases.delete.DeleteCustomerUseCase;
+
+import com.ecommerce_backend.backend.core.useCases.find.FindCustomerByIdUseCase;
+import com.ecommerce_backend.backend.core.useCases.list.ListCustomersUseCase;
+import com.ecommerce_backend.backend.core.useCases.update.UpdateCustomerUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.CustomerRequest;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
 
-    private final CustomerGateway customerGateway;
+    private final ListCustomersUseCase listCustomersUseCase;
+    private final FindCustomerByIdUseCase findCustomerByIdUseCase;
+    private final UpdateCustomerUseCase updateCustomerUseCase;
+    private final DeleteCustomerUseCase deleteCustomerUseCase;
 
-    public CustomerController(CustomerGateway customerGateway) {
-        this.customerGateway = customerGateway;
+    public CustomerController(
+            ListCustomersUseCase listCustomersUseCase,
+            FindCustomerByIdUseCase findCustomerByIdUseCase,
+            UpdateCustomerUseCase updateCustomerUseCase,
+            DeleteCustomerUseCase deleteCustomerUseCase) {
+        this.listCustomersUseCase = listCustomersUseCase;
+        this.findCustomerByIdUseCase = findCustomerByIdUseCase;
+        this.updateCustomerUseCase = updateCustomerUseCase;
+        this.deleteCustomerUseCase = deleteCustomerUseCase;
     }
 
     /**
@@ -26,9 +42,9 @@ public class CustomerController {
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Customer>> listAll() {
-        // Implementação básica - você pode adicionar paginação depois
-        return ResponseEntity.ok(List.of());
+    public ResponseEntity<Page<Customer>> listAll(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(listCustomersUseCase.execute(pageable));
     }
 
     /**
@@ -36,8 +52,8 @@ public class CustomerController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
-    public ResponseEntity<Customer> findById(@PathVariable Long id) {
-        return customerGateway.findById(id)
+    public ResponseEntity<Customer> findById(@PathVariable UUID id) {
+        return findCustomerByIdUseCase.execute(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -47,7 +63,7 @@ public class CustomerController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
-    public ResponseEntity<Customer> update(@PathVariable Long id, @RequestBody @Valid CustomerRequest request) {
+    public ResponseEntity<Customer> update(@PathVariable UUID id, @RequestBody @Valid CustomerRequest request) {
         Customer customer = new Customer(
                 id,
                 request.fullName(),
@@ -56,7 +72,7 @@ public class CustomerController {
                 request.password()
         );
 
-        Customer updated = customerGateway.save(customer);
+        Customer updated = updateCustomerUseCase.execute(customer);
         return ResponseEntity.ok(updated);
     }
 
@@ -65,11 +81,8 @@ public class CustomerController {
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        customerGateway.findById(id).ifPresent(customer -> {
-            // Aqui você implementaria a lógica de delete
-            // Por enquanto, apenas simulamos
-        });
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        deleteCustomerUseCase.execute(id);
         return ResponseEntity.noContent().build();
     }
 }
