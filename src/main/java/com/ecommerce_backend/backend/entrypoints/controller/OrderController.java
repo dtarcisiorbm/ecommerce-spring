@@ -35,28 +35,36 @@ public class OrderController {
     }
     @PostMapping
     public ResponseEntity<Order> create(@RequestBody @Valid OrderRequest request) {
-        // 1. Mapeamento manual do DTO para o Domínio (OrderItem)
-        var items = request.items().stream()
-                .map(item -> new OrderItem(
-                        null,
-                        item.productId(),
-                        item.quantity(),
-                        item.unitPrice()))
-                .collect(Collectors.toList());
+        try {
+            // 1. Mapeamento manual do DTO para o Domínio (OrderItem)
+            var items = request.items().stream()
+                    .map(item -> new OrderItem(
+                            null,
+                            item.productId(),
+                            item.quantity(),
+                            item.unitPrice()))
+                    .collect(Collectors.toList());
 
-        // 2. Mapeamento para o Domínio Order
-        var orderDomain = new Order(
-                null,
-                new Customer(request.customerId(), null, null, null, null),
-                items,
-                null,
-                null
-        );
+            // 2. Mapeamento para o Domínio Order
+            var orderDomain = new Order(
+                    null,
+                    new Customer(request.customerId(), null, null, null, null),
+                    items,
+                    null,
+                    null
+            );
 
-        // 3. Execução do Caso de Uso que já valida estoque e status
-        Order createdOrder = createOrderUseCase.execute(orderDomain);
+            // 3. Execução do Caso de Uso que já valida estoque e status
+            Order createdOrder = createOrderUseCase.execute(orderDomain);
 
-        // 4. Retorno com status 201 Created
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+            // 4. Retorno com status 201 Created
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+        } catch (IllegalArgumentException ex) {
+            throw ex; // Deixa o GlobalExceptionHandler tratar
+        } catch (IllegalStateException ex) {
+            throw ex; // Deixa o GlobalExceptionHandler tratar
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Failed to create order", ex);
+        }
     }
 }

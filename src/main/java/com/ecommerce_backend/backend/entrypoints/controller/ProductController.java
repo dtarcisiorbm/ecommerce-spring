@@ -37,9 +37,15 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody @Valid Product productRequest) {
-        // O ideal aqui seria usar um ProductRequestDTO e mapear para o domínio
-        Product created = createProductUseCase.execute(productRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        try {
+            // O ideal aqui seria usar um ProductRequestDTO e mapear para o domínio
+            Product created = createProductUseCase.execute(productRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException ex) {
+            throw ex; // Deixa o GlobalExceptionHandler tratar
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Failed to create product", ex);
+        }
     }
 
     /* @GetMapping("/{id}")

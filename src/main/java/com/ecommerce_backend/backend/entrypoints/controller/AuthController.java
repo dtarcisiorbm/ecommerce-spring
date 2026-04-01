@@ -9,6 +9,7 @@ import com.ecommerce_backend.backend.core.useCases.create.CreateUserUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.*;
 import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,16 +109,17 @@ public class AuthController {
      * Valida token (endpoint útil para frontend)
      */
     @PostMapping("/validate")
-    public ResponseEntity<TokenValidationResponse> validateToken(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<TokenValidationResponse> validateToken(
+            @RequestHeader("Authorization") @NotBlank String authHeader) {
+        if (!authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid authorization header format");
         }
 
         String token = authHeader.substring(7);
         String subject = tokenService.validateToken(token);
         
         if (subject.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new IllegalArgumentException("Invalid or expired token");
         }
 
         return ResponseEntity.ok(new TokenValidationResponse(true, subject));
@@ -127,16 +129,17 @@ public class AuthController {
      * Refresh token (endpoint para renovação de token)
      */
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<LoginResponse> refreshToken(
+            @RequestHeader("Authorization") @NotBlank String authHeader) {
+        if (!authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid authorization header format");
         }
 
         String token = authHeader.substring(7);
         String subject = tokenService.validateToken(token);
         
         if (subject.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new IllegalArgumentException("Invalid or expired token");
         }
 
         // Aqui você poderia buscar o usuário novamente para obter dados atualizados

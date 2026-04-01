@@ -40,6 +40,9 @@ public class CustomerDataProvider implements CustomerGateway {
 
     @Override
     public void deleteById(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Customer not found with id: " + id);
+        }
         repository.deleteById(id);
     }
 
