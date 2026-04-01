@@ -26,74 +26,159 @@ src/main/java/com/ecommerce_backend/backend/
 ├── BackendApplication.java          # Classe principal da aplicação
 ├── core/                           # Camada de Domínio (Core)
 │   ├── domain/                     # Entidades de negócio
+│   │   ├── Category.java
 │   │   ├── Customer.java
+│   │   ├── Notification.java
+│   │   ├── NotificationStatus.java
+│   │   ├── NotificationType.java
 │   │   ├── Order.java
 │   │   ├── OrderItem.java
 │   │   ├── OrderStatus.java
+│   │   ├── Payment.java
+│   │   ├── PaymentMethod.java
+│   │   ├── PaymentStatus.java
 │   │   ├── Product.java
+│   │   ├── ShoppingCart.java
+│   │   ├── ShoppingCartItem.java
+│   │   ├── UserRole.java
 │   │   └── User.java
 │   ├── gateway/                    # Interfaces de integração
+│   │   ├── CategoryGateway.java
 │   │   ├── CustomerGateway.java
+│   │   ├── NotificationGateway.java
 │   │   ├── OrderGateway.java
 │   │   ├── PasswordHasherGateway.java
+│   │   ├── PaymentGateway.java
 │   │   ├── ProductGateway.java
+│   │   ├── ShoppingCartGateway.java
 │   │   ├── TokenServiceGateway.java
 │   │   └── UserGateway.java
 │   └── useCases/                   # Casos de uso (regras de negócio)
-│       ├── create/                 # Casos de uso de criação
+│       ├── cart/                    # Casos de uso do carrinho
+│       │   ├── AddCartItemUseCase.java
+│       │   ├── ClearCartUseCase.java
+│       │   ├── GetCartUseCase.java
+│       │   ├── GetOrCreateCartUseCase.java
+│       │   ├── RemoveCartItemUseCase.java
+│       │   └── UpdateCartItemUseCase.java
+│       ├── categories/              # Casos de uso de categorias
+│       │   ├── CreateCategoryUseCase.java
+│       │   ├── DeleteCategoryUseCase.java
+│       │   ├── FindCategoryByIdUseCase.java
+│       │   ├── ListActiveCategoriesUseCase.java
+│       │   ├── ListCategoriesUseCase.java
+│       │   ├── ListRootCategoriesUseCase.java
+│       │   ├── ListSubcategoriesUseCase.java
+│       │   └── UpdateCategoryUseCase.java
+│       ├── create/                  # Casos de uso de criação
 │       │   ├── AuthenticateCustomerUseCase.java
 │       │   ├── AuthenticateUserUseCase.java
 │       │   ├── CreateCustomerUseCase.java
 │       │   ├── CreateOrderUseCase.java
 │       │   ├── CreateProductUseCase.java
 │       │   └── CreateUserUseCase.java
-│       └── list/                   # Casos de uso de listagem
-│           ├── ListOrdersUseCase.java
-│           ├── ListProductsUseCase.java
-│           └── ListUsersUseCase.java
+│       ├── delete/                  # Casos de uso de exclusão
+│       │   ├── DeleteProductUseCase.java
+│       │   └── FindCustomerByIdUseCase.java
+│       ├── find/                    # Casos de uso de busca
+│       │   ├── FindProductByIdUseCase.java
+│       │   └── SearchProductsUseCase.java
+│       ├── list/                    # Casos de uso de listagem
+│       │   ├── ListOrdersUseCase.java
+│       │   ├── ListProductsUseCase.java
+│       │   └── ListUsersUseCase.java
+│       ├── payment/                 # Casos de uso de pagamentos
+│       │   ├── ProcessPaymentUseCase.java
+│       │   └── RefundPaymentUseCase.java
+│       └── update/                  # Casos de uso de atualização
+│           ├── UpdateCategoryUseCase.java
+│           ├── UpdateCustomerUseCase.java
+│           ├── UpdateOrderStatusUseCase.java
+│           └── UpdateProductUseCase.java
 ├── entrypoints/                    # Camada de Apresentação
 │   ├── controller/                 # Controllers REST
 │   │   ├── AuthController.java
+│   │   ├── CategoryController.java
 │   │   ├── CustomerController.java
 │   │   ├── OrderController.java
-│   │   └── ProductController.java
+│   │   ├── PaymentController.java
+│   │   ├── ProductController.java
+│   │   └── ShoppingCartController.java
 │   ├── dto/                        # Data Transfer Objects
+│   │   ├── AddCartItemRequest.java
+│   │   ├── CartResponse.java
+│   │   ├── CategoryRequest.java
 │   │   ├── CustomerRequest.java
 │   │   ├── LoginRequest.java
 │   │   ├── LoginResponse.java
 │   │   ├── OrderItemRequest.java
 │   │   ├── OrderRequest.java
-│   │   └── RegisterRequest.java
+│   │   ├── OrderStatusUpdateRequest.java
+│   │   ├── PaymentRequest.java
+│   │   ├── ProductFilterRequest.java
+│   │   ├── RefundRequest.java
+│   │   ├── RegisterRequest.java
+│   │   └── UpdateCartItemRequest.java
 │   ├── exceptions/                 # Tratamento global de exceções
 │   │   ├── GlobalExceptionHandler.java
 │   │   └── SecurityExceptionHandler.java
 │   └── mapper/                     # Mapeamento de DTOs
+│       ├── CategoryMapper.java
 │       ├── CustomerMapper.java
+│       ├── NotificationMapper.java
 │       ├── OrderMapper.java
+│       ├── PaymentMapper.java
 │       ├── ProductMapper.java
+│       ├── ShoppingCartItemMapper.java
+│       ├── ShoppingCartMapper.java
 │       └── UserMapper.java
 └── infrastructure/                 # Camada de Infraestrutura
-    ├── config/                     # Configurações Spring
+    ├── cache/                       # Cache services
+    │   ├── CacheService.java
+    │   └── ProductCacheService.java
+    ├── config/                       # Configurações Spring
+    │   ├── CategoryConfig.java
     │   ├── CustomerConfig.java
     │   ├── OrderConfig.java
+    │   ├── PaymentConfig.java
     │   ├── ProductConfig.java
+    │   ├── RedisConfig.java
     │   ├── SecurityConfig.java
+    │   ├── ShoppingCartConfig.java
     │   └── UserConfig.java
     ├── dataprovider/               # Implementações dos Gateways
+    │   ├── CategoryDataProvider.java
+    │   ├── NotificationDataProvider.java
     │   ├── OrderDataProvider.java
+    │   ├── PaymentDataProvider.java
     │   ├── ProductDataProvider.java
+    │   ├── ShoppingCartDataProvider.java
     │   ├── UserDataProvider.java
     │   └── repository/             # Repositórios Spring Data
+    │       ├── CategoryRepository.java
     │       ├── CustomerRepository.java
+    │       ├── NotificationRepository.java
     │       ├── OrderRepository.java
+    │       ├── PaymentRepository.java
     │       ├── ProductRepository.java
+    │       ├── ShoppingCartItemRepository.java
+    │       ├── ShoppingCartRepository.java
     │       └── UserRepository.java
+    ├── notification/                # Serviços de notificação
+    │   └── EmailNotificationService.java
+    ├── payment/                     # Gateways de pagamento
+    │   └── StripePaymentGateway.java
     ├── persistence/                 # Entidades JPA
     │   └── entity/
+    │       ├── CategoryEntity.java
     │       ├── CustomerEntity.java
+    │       ├── NotificationEntity.java
     │       ├── OrderEntity.java
     │       ├── OrderItemEntity.java
+    │       ├── PaymentEntity.java
     │       ├── ProductEntity.java
+    │       ├── ShoppingCartEntity.java
+    │       ├── ShoppingCartItemEntity.java
     │       └── UserEntity.java
     └── security/                   # Configurações de segurança
         ├── BCryptHasherAdapter.java
