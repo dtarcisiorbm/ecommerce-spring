@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: ecommerce-postgres
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ecommerce-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+    command: redis-server --appendonly yes
+
+  # MailHog para desenvolvimento de emails
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ecommerce-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - ecommerce-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge

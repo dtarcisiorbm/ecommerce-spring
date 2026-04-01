@@ -70,7 +70,10 @@ public class AuthController {
                 request.fullName(),
                 request.email(),
                 request.taxId(),
-                request.password()
+                request.password(),
+                true,
+                null,
+                null
         );
 
         createCustomerUseCase.execute(newCustomer);

@@ -1,10 +1,11 @@
 package com.ecommerce_backend.backend.core.domain;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record OrderItem(
-        Long id,
-        Long productId,
+        UUID id,
+        UUID productId,
         Integer quantity,
         BigDecimal unitPrice
 ) {

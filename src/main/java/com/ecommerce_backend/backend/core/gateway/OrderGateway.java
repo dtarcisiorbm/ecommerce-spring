@@ -7,11 +7,12 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface OrderGateway {
     Order save(Order order);
     Page<Order> findAll(Pageable pageable);
-    Optional<Order> findById(Long id);
-    Order updateStatus(Long id, OrderStatus status);
-    List<Order> findByProductId(Long productId);
+    Optional<Order> findById(UUID id);
+    Order updateStatus(UUID id, OrderStatus status);
+    List<Order> findByProductId(UUID productId);
 }

@@ -5,6 +5,7 @@ import com.ecommerce_backend.backend.core.gateway.ProductGateway;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UpdateProductUseCase {
@@ -14,7 +15,7 @@ public class UpdateProductUseCase {
         this.productGateway = productGateway;
     }
 
-    public Product execute(Long id, Product product) {
+    public Product execute(UUID id, Product product) {
         // Verifica se o produto existe
         Optional<Product> existingProduct = productGateway.findById(id);
         if (existingProduct.isEmpty()) {
@@ -31,7 +32,7 @@ public class UpdateProductUseCase {
 
         // Garante que o ID do produto seja o mesmo do parâmetro
         Product updatedProduct = new Product(id, product.name(), product.sku(), 
-                                           product.price(), product.stock());
+                                           product.price(), product.stock(), product.categoryId());
         
         return productGateway.save(updatedProduct);
     }

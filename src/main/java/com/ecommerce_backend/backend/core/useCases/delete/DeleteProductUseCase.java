@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class DeleteProductUseCase {
@@ -20,7 +21,7 @@ public class DeleteProductUseCase {
         this.orderGateway = orderGateway;
     }
 
-    public void execute(Long id) {
+    public void execute(UUID id) {
         Optional<Product> product = productGateway.findById(id);
         if (product.isEmpty()) {
             throw new IllegalArgumentException("Product not found with id: " + id);

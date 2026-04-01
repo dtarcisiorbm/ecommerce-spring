@@ -77,16 +77,21 @@ public class CustomerController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
     public ResponseEntity<Customer> update(@PathVariable UUID id, @RequestBody @Valid CustomerRequest request) {
-        Customer customer = new Customer(
-                id,
-                request.fullName(),
-                request.email(),
-                request.taxId(),
-                request.password()
-        );
-
-        Customer updated = updateCustomerUseCase.execute(customer);
-        return ResponseEntity.ok(updated);
+        return customerGateway.findById(id)
+                .map(existingCustomer -> {
+                    Customer updatedCustomer = new Customer(
+                            id,
+                            request.fullName(),
+                            request.email(),
+                            request.taxId(),
+                            request.password(),
+                            existingCustomer.active(),
+                            existingCustomer.createdAt(),
+                            java.time.LocalDateTime.now()
+                    );
+                    return ResponseEntity.ok(updateCustomerUseCase.execute(updatedCustomer));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class OrderDataProvider implements OrderGateway {
@@ -44,13 +45,13 @@ public class OrderDataProvider implements OrderGateway {
     }
     
     @Override
-    public Optional<Order> findById(Long id) {
+    public Optional<Order> findById(UUID id) {
         return repository.findById(id).map(mapper::toDomain);
     }
     
     @Override
     @Transactional
-    public Order updateStatus(Long id, OrderStatus status) {
+    public Order updateStatus(UUID id, OrderStatus status) {
         var orderEntity = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + id));
         
@@ -60,7 +61,7 @@ public class OrderDataProvider implements OrderGateway {
     }
     
     @Override
-    public List<Order> findByProductId(Long productId) {
+    public List<Order> findByProductId(UUID productId) {
         return repository.findByItemsProductId(productId)
                 .stream()
                 .map(mapper::toDomain)

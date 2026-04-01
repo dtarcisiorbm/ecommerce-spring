@@ -5,6 +5,7 @@ import com.ecommerce_backend.backend.core.gateway.ProductGateway;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class FindProductByIdUseCase {
@@ -14,7 +15,7 @@ public class FindProductByIdUseCase {
         this.productGateway = productGateway;
     }
 
-    public Optional<Product> execute(Long id) {
+    public Optional<Product> execute(UUID id) {
         return productGateway.findById(id);
     }
 }

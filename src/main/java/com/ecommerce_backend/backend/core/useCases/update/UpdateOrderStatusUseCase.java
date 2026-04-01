@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UpdateOrderStatusUseCase {
@@ -16,7 +17,7 @@ public class UpdateOrderStatusUseCase {
         this.orderGateway = orderGateway;
     }
 
-    public Order execute(Long id, OrderStatus newStatus) {
+    public Order execute(UUID id, OrderStatus newStatus) {
         // Verifica se o pedido existe
         Order order = orderGateway.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + id));

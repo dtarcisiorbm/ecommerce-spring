@@ -27,7 +27,10 @@ public class CreateCustomerUseCase {
                 customer.fullName(),
                 customer.email(),
                 customer.taxId(),
-                encryptedPassword
+                encryptedPassword,
+                true,
+                null,
+                null
         );
 
         return customerGateway.save(customerToSave);

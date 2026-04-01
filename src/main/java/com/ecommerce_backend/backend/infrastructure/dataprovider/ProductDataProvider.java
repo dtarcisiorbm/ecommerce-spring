@@ -42,13 +42,13 @@ public class ProductDataProvider implements ProductGateway {
         return repository.findBySku(sku).map(mapper::toDomain);
     }
     @Override
-    public Optional<Product> findById(Long id) {
+    public Optional<Product> findById(UUID id) {
         return repository.findById(id).map(mapper::toDomain);
     }
     
     @Override
     @Transactional
-    public void deleteById(Long id) {
+    public void deleteById(UUID id) {
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Product not found with id: " + id);
         }

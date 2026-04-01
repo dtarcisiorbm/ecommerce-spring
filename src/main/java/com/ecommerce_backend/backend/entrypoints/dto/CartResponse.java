@@ -13,11 +13,10 @@ public record CartResponse(
         BigDecimal totalAmount
 ) {
     public CartResponse(ShoppingCart cart, List<ShoppingCartItem> items) {
-        this.cart = cart;
-        this.items = items;
-        this.totalItems = items.stream().mapToInt(ShoppingCartItem::quantity).sum();
-        this.totalAmount = items.stream()
-                .map(ShoppingCartItem::totalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        this(cart, items, 
+             items.stream().mapToInt(ShoppingCartItem::quantity).sum(),
+             items.stream()
+                 .map(ShoppingCartItem::totalPrice)
+                 .reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 }

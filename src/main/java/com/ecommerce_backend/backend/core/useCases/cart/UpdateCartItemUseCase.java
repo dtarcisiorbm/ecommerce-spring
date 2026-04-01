@@ -1,6 +1,7 @@
 package com.ecommerce_backend.backend.core.useCases.cart;
 
 import com.ecommerce_backend.backend.core.domain.Product;
+import com.ecommerce_backend.backend.core.domain.ShoppingCart;
 import com.ecommerce_backend.backend.core.domain.ShoppingCartItem;
 import com.ecommerce_backend.backend.core.gateway.ProductGateway;
 import com.ecommerce_backend.backend.core.gateway.ShoppingCartGateway;

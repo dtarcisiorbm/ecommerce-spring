@@ -60,7 +60,7 @@ public class ShoppingCartDataProvider implements ShoppingCartGateway {
     @Transactional
     public void deleteById(UUID id) {
         shoppingCartItemRepository.findByShoppingCartId(id)
-                .forEach(item -> shoppingCartItemRepository.delete(item.getId()));
+                .forEach(item -> shoppingCartItemRepository.deleteById(item.getId()));
         shoppingCartRepository.deleteById(id);
     }
 

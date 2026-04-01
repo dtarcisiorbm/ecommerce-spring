@@ -12,9 +12,9 @@ import java.util.UUID;
 public interface ProductGateway {
     Product save(Product product);
     Optional<Product> findBySku(String sku);
-    Optional<Product> findById(Long id);
+    Optional<Product> findById(UUID id);
     Page<Product> findAll(Pageable pageable);
-    void deleteById(Long id);
+    void deleteById(UUID id);
     
     // Métodos de busca e filtro
     Page<Product> findByNameContaining(String name, Pageable pageable);

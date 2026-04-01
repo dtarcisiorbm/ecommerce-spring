@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.core.useCases.cart;
 import com.ecommerce_backend.backend.core.domain.ShoppingCart;
 import com.ecommerce_backend.backend.core.domain.ShoppingCartItem;
 import com.ecommerce_backend.backend.core.gateway.ShoppingCartGateway;
+import com.ecommerce_backend.backend.entrypoints.dto.CartResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,4 @@ public class GetCartUseCase {
 
         return new CartResponse(cart, items);
     }
-
-    public record CartResponse(ShoppingCart cart, List<ShoppingCartItem> items) {}
 }

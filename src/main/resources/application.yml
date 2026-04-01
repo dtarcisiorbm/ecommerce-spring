@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: ecommerce-backend
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: ecommerce_user
+    password: ecommerce_password
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  mail:
+    host: localhost
+    port: 1025
+    username: noreply@ecommerce.com
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+        debug: true
+  
+  redis:
+    host: localhost
+    port: 6379
+    password: ""
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000  # 1 hora
+
+# Configurações da aplicação
+app:
+  jwt:
+    secret: minha-chave-ultra-secreta-de-32-caracteres
+    expiration: 86400000  # 24 horas
+  
+  rate-limit:
+    enabled: true
+    default-limit: 100
+    default-window: 60  # segundos
+    
+# Configurações de pagamento
+payment:
+  gateway: default  # stripe, default
+  
+# Configurações do Stripe
+stripe:
+  secret:
+    key: sk_test_...  # Chave de teste do Stripe
+  publishable:
+    key: pk_test_...  # Chave publicável do Stripe
+
+# Logging
+logging:
+  level:
+    com.ecommerce_backend: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cache: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
