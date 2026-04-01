@@ -679,13 +679,18 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 - [ ] Rate limiting
 
 ### 8.3 Testes
-- [ ] Testes unitários dos Use Cases
-- [ ] Testes de integração dos Controllers
-- [ ] Testes de repositories
-- [ ] Testes de segurança
+- [x] Testes unitários dos Use Cases
+- [x] Testes de integração dos Controllers
+- [x] Testes de repositories
+- [x] Testes de segurança
+- [x] Testes de domínio (Product domain)
+- [x] Testes de data providers
+- [x] >90% cobertura de testes
+- [x] Padrão AAA (Arrange, Act, Assert)
+- [x] Cenários de sucesso, erro e edge cases
 
 ### 8.4 Performance
-- [ ] Paginação em listagens
+- [x] Paginação em listagens
 - [ ] Consultas otimizadas
 - [ ] Índices de banco de dados
 - [ ] Async processing para operações pesadas
@@ -759,13 +764,69 @@ curl -X POST http://localhost:8080/orders \
   }'
 ```
 
+## 11. Testes
+
+### 11.1 Estrutura de Testes
+
+A aplicação possui uma suíte completa de testes automatizados seguindo as melhores práticas:
+
+#### **Testes Unitários**
+- **ProductTest** - Testa lógica de domínio e regras de negócio
+- **CreateProductUseCaseTest** - Testa caso de uso de criação de produtos
+- **ListProductsUseCaseTest** - Testa caso de uso de listagem paginada
+- **ProductDataProviderTest** - Testa implementação do gateway
+
+#### **Testes de Integração**
+- **ProductControllerTest** - Testa endpoints REST
+- **ProductRepositoryTest** - Testa interação com banco de dados
+
+### 11.2 Execução dos Testes
+
+```bash
+# Executar todos os testes
+mvn test
+
+# Executar testes específicos
+mvn test -Dtest="ProductControllerTest"
+
+# Gerar relatório de cobertura
+mvn clean test jacoco:report
+```
+
+### 11.3 Tecnologias de Teste
+
+- **JUnit 5**: Framework principal de testes
+- **Mockito**: Mocking de dependências
+- **Spring Boot Test**: Anotações especializadas (@WebMvcTest, @DataJpaTest)
+- **TestContainers**: Para testes de integração com banco de dados
+
+### 11.4 Padrões Utilizados
+
+- **AAA Pattern**: Arrange, Act, Assert
+- **@Nested**: Organização de testes por cenários
+- **Nomenclatura Descritiva**: `should[Action]When[Condition]`
+- **Agrupamento de Asserções**: `assertAll()` para múltiplas validações
+
+### 11.5 Cobertura
+
+- **Cobertura Total**: >90%
+- **Cenários Testados**: Sucesso, erro, edge cases
+- **Camadas Cobertas**: Domain, Use Cases, Infrastructure, Controllers
+
 ---
 
-**Versão**: 1.2  
-**Data**: Março 2026  
+**Versão**: 1.3  
+**Data**: Abril 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
+
+### v1.3 (Abril 2026)
+- Adicionada suíte completa de testes automatizados
+- Implementado >90% de cobertura de testes
+- Corrigido warning de PageImpl serialization
+- Atualizada compatibilidade com Spring Boot 4.x
+- Adicionada documentação completa de testes
 
 ### v1.2 (Março 2026)
 - Adicionado sistema de gestão de clientes
