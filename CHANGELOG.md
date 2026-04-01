@@ -8,14 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Comprehensive Error Handling System**
-  - Enhanced GlobalExceptionHandler with missing exception types (EmptyResultDataAccessException, DataIntegrityViolationException, RuntimeException)
-  - New SecurityExceptionHandler for authentication and authorization errors
-  - Repository layer safety checks to prevent unexpected crashes
-  - Standardized error response format with timestamp and path
-  - Security logging for failed authentication attempts
-  - Robust exception handling in ProductController and OrderController
-  - Improved AuthController validation with @NotBlank annotations
+- **Enhanced Security Error Handling**
+  - Comprehensive 401/403 error responses with detailed English messages
+  - Authentication entry point for missing/invalid tokens with clear guidance
+  - Access denied handler for permission-based errors with explanations
+  - Enhanced SecurityExceptionHandler with multiple exception types
+  - Professional error response format with error, message, details, timestamp, and path
+  - Clear developer guidance for authentication and authorization issues
+
+### Security
+- **Authentication Error Messages** - Detailed English messages for missing tokens, invalid credentials, and access denied scenarios
+- **Developer Experience** - Clear error responses help developers understand and fix authentication issues quickly
+- **Audit Logging** - Enhanced security logging for failed authentication attempts with IP and path tracking
 
 ### Changed
 - **Error Response Format** - Now includes timestamp and path fields for better debugging

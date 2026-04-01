@@ -285,7 +285,13 @@ Definem contratos para integração com infraestrutura, seguindo o princípio De
 - **Propósito**: Configuração principal de segurança
 - **Features**: Desabilita CSRF, sessão stateless, JWT filter
 - **Endpoints Públicos**: `/auth/login`, `/auth/register`
+- **Error Handling**: Authentication entry point e access denied handler personalizados
 - **Bean**: PasswordEncoder (BCrypt), AuthenticationManager
+
+**Enhanced Security Error Responses:**
+- **401 Unauthorized**: Para tokens ausentes/inválidos com orientação detalhada
+- **403 Forbidden**: Para permissões insuficientes com explicações claras
+- **Formato Padrão**: JSON com error, message, details, timestamp, e path
 
 #### **CustomerConfig.java** & **UserConfig.java** & **OrderConfig.java** & **ProductConfig.java**
 - **Propósito**: Configuração de beans dos casos de uso
@@ -519,8 +525,31 @@ public record OrderItemRequest(
 - **Propósito**: Tratamento especializado para exceções de segurança
 - **Logging de Auditoria**: Registra tentativas de acesso não autorizado
 - **Exceções Tratadas**:
+  - `AuthenticationException`: Retorna HTTP 401 com mensagem detalhada
   - `BadCredentialsException`: Retorna HTTP 401 com logging de segurança
   - `AccessDeniedException`: Retorna HTTP 403 com auditoria de acesso
+
+```java
+// Formato de resposta de erro de segurança
+{
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Authentication required: No valid access token provided",
+  "details": "Please include a valid Bearer token in the Authorization header",
+  "timestamp": "2026-04-01T12:00:00",
+  "path": "/api/customers"
+}
+
+// Resposta para acesso negado
+{
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Access denied: Insufficient permissions for this resource",
+  "details": "Your token is valid but you don't have the required role/permission",
+  "timestamp": "2026-04-01T12:00:00",
+  "path": "/api/admin"
+}
+```
 
 ```java
 // Formato de resposta de erro padronizado
@@ -828,11 +857,20 @@ mvn clean test jacoco:report
 
 ---
 
-**Versão**: 1.4  
+**Versão**: 1.5  
 **Data**: Abril 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
+
+### v1.5 (Abril 2026)
+- Implementado tratamento de erro de segurança aprimorado com mensagens detalhadas em inglês
+- Adicionado authentication entry point para tokens ausentes/inválidos com orientação clara
+- Configurado access denied handler para erros de permissão com explicações detalhadas
+- Aprimorado SecurityExceptionHandler com múltiplos tipos de exceção
+- Implementado formato de resposta de erro profissional com error, message, details, timestamp e path
+- Adicionado logging de auditoria aprimorado para tentativas de acesso não autorizado
+- Melhorada experiência do desenvolvedor com mensagens de erro claras e acionáveis
 
 ### v1.4 (Abril 2026)
 - Implementado sistema abrangente de tratamento de erros
