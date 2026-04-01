@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/orders")
@@ -57,7 +58,7 @@ public class OrderController {
             // 2. Mapeamento para o Domínio Order
             var orderDomain = new Order(
                     null,
-                    new Customer(request.customerId(), null, null, null, null),
+                    new Customer(request.customerId(), null, null, null, null, true, null, null),
                     items,
                     null,
                     null
@@ -79,7 +80,7 @@ public class OrderController {
     
     @PutMapping("/{id}/status")
     public ResponseEntity<Order> updateStatus(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody @Valid OrderStatusUpdateRequest request) {
         try {
             Order updatedOrder = updateOrderStatusUseCase.execute(id, request.status());

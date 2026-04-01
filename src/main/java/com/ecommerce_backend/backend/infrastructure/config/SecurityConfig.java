@@ -62,7 +62,7 @@ public class SecurityConfig {
                         // Endpoints de pedidos - CUSTOMER pode criar e ver próprios, ADMIN/MANAGER pode gerenciar todos
                         .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
                         .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
-                        .requestMatchers(HttpMethod.PUT, "/orders/**/status").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/orders/*/status").hasAnyRole("ADMIN", "MANAGER")
                         
                         // Endpoints de usuários - apenas ADMIN/MANAGER
                         .requestMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")

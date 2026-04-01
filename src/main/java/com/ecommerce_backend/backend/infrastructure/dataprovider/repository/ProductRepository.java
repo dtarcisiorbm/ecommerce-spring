@@ -14,14 +14,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
+public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
     Optional<ProductEntity> findBySku(String sku);
-    List<ProductEntity> findByItemsProductId(Long productId);
     
     // Métodos de busca
     List<ProductEntity> findByNameContainingIgnoreCase(String name);
     Page<ProductEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<ProductEntity> findByCategoryId(UUID categoryId, Pageable pageable);
+    List<ProductEntity> findByCategoryId(UUID categoryId);
     
     // Query complexa para múltiplos filtros
     @Query("SELECT p FROM ProductEntity p WHERE " +
