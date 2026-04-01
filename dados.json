@@ -1,12 +1,12 @@
 {
 	"_type": "export",
 	"__export_format": 4,
-	"__export_date": "2026-04-01T12:09:00.000Z",
+	"__export_date": "2026-04-01T15:56:00.000Z",
 	"resources": [
 		{
 			"_id": "wrk_ecommerce_v4",
 			"parentId": null,
-			"name": "E-commerce API - Autenticação Unificada",
+			"name": "E-commerce API - Completa v2.0.1",
 			"scope": "collection",
 			"_type": "workspace"
 		},
@@ -18,7 +18,13 @@
 				"base_url": "http://localhost:8080",
 				"admin_token": "",
 				"customer_token": "",
-				"customer_id": ""
+				"customer_id": "",
+				"order_id": "",
+				"product_id": "",
+				"category_id": "",
+				"cart_id": "",
+				"payment_id": "",
+				"notification_id": ""
 			},
 			"_type": "environment"
 		},
@@ -496,6 +502,263 @@
 			"headers": [
 				{ "name": "Accept", "value": "application/json" }
 			],
+			"_type": "request"
+		},
+		{
+			"_id": "fld_cart",
+			"parentId": "wrk_ecommerce_v4",
+			"name": "6. Carrinho de Compras (/cart)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_get_cart",
+			"parentId": "fld_cart",
+			"url": "{{ _.base_url }}/cart",
+			"name": "Obter Carrinho",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_add_cart_item",
+			"parentId": "fld_cart",
+			"url": "{{ _.base_url }}/cart/items",
+			"name": "Adicionar Item ao Carrinho",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"productId\": \"{{ _.product_id }}\",\n  \"quantity\": 2\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_update_cart_item",
+			"parentId": "fld_cart",
+			"url": "{{ _.base_url }}/cart/items/{{ _.cart_id }}",
+			"name": "Atualizar Quantidade do Item",
+			"method": "PUT",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"quantity\": 3\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_remove_cart_item",
+			"parentId": "fld_cart",
+			"url": "{{ _.base_url }}/cart/items/{{ _.cart_id }}",
+			"name": "Remover Item do Carrinho",
+			"method": "DELETE",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_clear_cart",
+			"parentId": "fld_cart",
+			"url": "{{ _.base_url }}/cart",
+			"name": "Limpar Carrinho",
+			"method": "DELETE",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "fld_payments",
+			"parentId": "wrk_ecommerce_v4",
+			"name": "7. Pagamentos (/payments)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_process_payment",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/process",
+			"name": "Processar Pagamento",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"orderId\": \"{{ _.order_id }}\",\n  \"amount\": 199.99,\n  \"method\": \"CREDIT_CARD\",\n  \"paymentRequest\": {\n    \"cardNumber\": \"4111111111111111\",\n    \"cardHolderName\": \"Maria Cliente\",\n    \"expiryDate\": \"12/25\",\n    \"cvv\": \"123\",\n    \"email\": \"maria@cliente.com\",\n    \"billingAddress\": \"Rua A, 123\",\n    \"postalCode\": \"12345678\"\n  }\n}"
+			},
+			"tests": [
+				{
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    const response = pm.response.json();",
+							"    pm.environment.set('payment_id', response.id);",
+							"    pm.collectionVariables.set('payment_id', response.id);",
+							"}"
+						]
+					}
+				}
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_get_payment",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/{{ _.payment_id }}",
+			"name": "Buscar Pagamento por ID",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_payment_by_order",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/order/{{ _.order_id }}",
+			"name": "Buscar Pagamento por Pedido",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_refund_payment",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/{{ _.payment_id }}/refund",
+			"name": "Reembolsar Pagamento",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"amount\": 50.00\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_full_refund",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/{{ _.payment_id }}/refund/full",
+			"name": "Reembolso Total",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_payment_webhook",
+			"parentId": "fld_payments",
+			"url": "{{ _.base_url }}/payments/webhook/stripe",
+			"name": "Webhook Stripe",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" },
+				{ "name": "Stripe-Signature", "value": "test_signature" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_test\",\n      \"status\": \"succeeded\"\n    }\n  }\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "fld_notifications",
+			"parentId": "wrk_ecommerce_v4",
+			"name": "8. Notificações (/notifications)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_list_notifications",
+			"parentId": "fld_notifications",
+			"url": "{{ _.base_url }}/notifications",
+			"name": "Listar Notificações",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_send_notification",
+			"parentId": "fld_notifications",
+			"url": "{{ _.base_url }}/notifications/send",
+			"name": "Enviar Notificação",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"recipientId\": \"{{ _.customer_id }}\",\n  \"type\": \"ORDER_STATUS\",\n  \"title\": \"Status do Pedido Atualizado\",\n  \"message\": \"Seu pedido foi pago e está sendo processado.\",\n  \"channels\": [\"EMAIL\"]\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_mark_read",
+			"parentId": "fld_notifications",
+			"url": "{{ _.base_url }}/notifications/{{ _.notification_id }}/read",
+			"name": "Marcar como Lida",
+			"method": "PUT",
+			"authentication": { "type": "bearer", "token": "{{ _.customer_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "fld_users",
+			"parentId": "wrk_ecommerce_v4",
+			"name": "9. Usuários (/users)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_list_users",
+			"parentId": "fld_users",
+			"url": "{{ _.base_url }}/users",
+			"name": "Listar Usuários (Admin)",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_create_user",
+			"parentId": "fld_users",
+			"url": "{{ _.base_url }}/users",
+			"name": "Criar Usuário (Admin)",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"João Funcionário\",\n  \"email\": \"joao@loja.com\",\n  \"password\": \"joao123\"\n}"
+			},
 			"_type": "request"
 		}
 	]
