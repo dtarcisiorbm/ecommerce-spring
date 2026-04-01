@@ -1,8 +1,8 @@
 package com.ecommerce_backend.backend.entrypoints.controller;
 
 import com.ecommerce_backend.backend.core.domain.Customer;
+import com.ecommerce_backend.backend.core.gateway.CustomerGateway;
 import com.ecommerce_backend.backend.core.useCases.delete.DeleteCustomerUseCase;
-
 import com.ecommerce_backend.backend.core.useCases.find.FindCustomerByIdUseCase;
 import com.ecommerce_backend.backend.core.useCases.list.ListCustomersUseCase;
 import com.ecommerce_backend.backend.core.useCases.update.UpdateCustomerUseCase;
@@ -25,16 +25,19 @@ public class CustomerController {
     private final FindCustomerByIdUseCase findCustomerByIdUseCase;
     private final UpdateCustomerUseCase updateCustomerUseCase;
     private final DeleteCustomerUseCase deleteCustomerUseCase;
+    private final CustomerGateway customerGateway;
 
     public CustomerController(
             ListCustomersUseCase listCustomersUseCase,
             FindCustomerByIdUseCase findCustomerByIdUseCase,
             UpdateCustomerUseCase updateCustomerUseCase,
-            DeleteCustomerUseCase deleteCustomerUseCase) {
+            DeleteCustomerUseCase deleteCustomerUseCase,
+            CustomerGateway customerGateway) {
         this.listCustomersUseCase = listCustomersUseCase;
         this.findCustomerByIdUseCase = findCustomerByIdUseCase;
         this.updateCustomerUseCase = updateCustomerUseCase;
         this.deleteCustomerUseCase = deleteCustomerUseCase;
+        this.customerGateway = customerGateway;
     }
 
     /**
@@ -48,12 +51,22 @@ public class CustomerController {
     }
 
     /**
-     * Busca cliente por ID
+     * Lista apenas clientes ativos
+     */
+    @GetMapping("/active")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<Page<Customer>> listActive(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(listCustomersUseCase.execute(pageable));
+    }
+
+    /**
+     * Busca cliente por ID (apenas se estiver ativo)
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
     public ResponseEntity<Customer> findById(@PathVariable UUID id) {
-        return findCustomerByIdUseCase.execute(id)
+        return customerGateway.findByIdAndActive(id, true)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -77,7 +90,7 @@ public class CustomerController {
     }
 
     /**
-     * Remove cliente (apenas administradores)
+     * Remove cliente (soft delete - mantém histórico)
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

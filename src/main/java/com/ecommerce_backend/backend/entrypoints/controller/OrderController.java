@@ -6,7 +6,9 @@ import com.ecommerce_backend.backend.core.domain.OrderItem;
 
 import com.ecommerce_backend.backend.core.useCases.create.CreateOrderUseCase;
 import com.ecommerce_backend.backend.core.useCases.list.ListOrdersUseCase;
+import com.ecommerce_backend.backend.core.useCases.update.UpdateOrderStatusUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.OrderRequest;
+import com.ecommerce_backend.backend.entrypoints.dto.OrderStatusUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,16 +25,23 @@ public class OrderController {
 
     private final CreateOrderUseCase createOrderUseCase;
     private final ListOrdersUseCase listOrdersUseCase;
+    private final UpdateOrderStatusUseCase updateOrderStatusUseCase;
 
-    public OrderController(CreateOrderUseCase createOrderUseCase,ListOrdersUseCase listOrdersUseCase) {
+    public OrderController(
+            CreateOrderUseCase createOrderUseCase,
+            ListOrdersUseCase listOrdersUseCase,
+            UpdateOrderStatusUseCase updateOrderStatusUseCase) {
         this.createOrderUseCase = createOrderUseCase;
         this.listOrdersUseCase = listOrdersUseCase;
+        this.updateOrderStatusUseCase = updateOrderStatusUseCase;
     }
+    
     @GetMapping
     public ResponseEntity<Page<Order>> list(
             @PageableDefault(size = 10, page = 0, sort = "createdAt") Pageable pageable) {
         return ResponseEntity.ok(listOrdersUseCase.execute(pageable));
     }
+    
     @PostMapping
     public ResponseEntity<Order> create(@RequestBody @Valid OrderRequest request) {
         try {
@@ -65,6 +74,20 @@ public class OrderController {
             throw ex; // Deixa o GlobalExceptionHandler tratar
         } catch (RuntimeException ex) {
             throw new RuntimeException("Failed to create order", ex);
+        }
+    }
+    
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Order> updateStatus(
+            @PathVariable Long id,
+            @RequestBody @Valid OrderStatusUpdateRequest request) {
+        try {
+            Order updatedOrder = updateOrderStatusUseCase.execute(id, request.status());
+            return ResponseEntity.ok(updatedOrder);
+        } catch (IllegalArgumentException ex) {
+            throw ex; // Deixa o GlobalExceptionHandler tratar
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Failed to update order status", ex);
         }
     }
 }

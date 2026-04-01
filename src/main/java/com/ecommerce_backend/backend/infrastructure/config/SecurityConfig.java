@@ -1,5 +1,6 @@
 package com.ecommerce_backend.backend.infrastructure.config;
 
+import com.ecommerce_backend.backend.infrastructure.ratelimit.RateLimitFilter;
 import com.ecommerce_backend.backend.infrastructure.security.SecurityFilter;
 import com.ecommerce_backend.backend.entrypoints.exceptions.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -21,9 +22,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
+    private final RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(SecurityFilter securityFilter) {
+    public SecurityConfig(SecurityFilter securityFilter, RateLimitFilter rateLimitFilter) {
         this.securityFilter = securityFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -43,6 +46,26 @@ public class SecurityConfig {
                         
                         // Endpoints de documentação (se houver)
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        
+                        // Endpoints de produtos - leitura pública para autenticados, escrita para ADMIN/MANAGER
+                        .requestMatchers(HttpMethod.GET, "/products/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN")
+                        
+                        // Endpoints de clientes - ADMIN/MANAGER para operações de outros usuários
+                        .requestMatchers(HttpMethod.GET, "/customers/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/customers/**").permitAll() // Registro público
+                        .requestMatchers(HttpMethod.PUT, "/customers/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.DELETE, "/customers/**").hasRole("ADMIN")
+                        
+                        // Endpoints de pedidos - CUSTOMER pode criar e ver próprios, ADMIN/MANAGER pode gerenciar todos
+                        .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
+                        .requestMatchers(HttpMethod.PUT, "/orders/**/status").hasAnyRole("ADMIN", "MANAGER")
+                        
+                        // Endpoints de usuários - apenas ADMIN/MANAGER
+                        .requestMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")
                         
                         // Demais endpoints requerem autenticação
                         .anyRequest().authenticated()
@@ -85,6 +108,7 @@ public class SecurityConfig {
                             );
                         })
                 )
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

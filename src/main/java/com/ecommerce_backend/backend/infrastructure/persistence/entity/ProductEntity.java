@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -28,4 +29,7 @@ public class ProductEntity {
 
     @Column(nullable = false)
     private Integer stock;
+
+    @Column(name = "category_id")
+    private UUID categoryId;
 }

@@ -8,5 +8,5 @@ public record CustomerRequest(
         @NotBlank String fullName,
         @NotBlank @Email String email,
         @NotBlank String taxId,
-        @NotBlank @Size(min = 6) String password // Adicionado para o registo
+        @Size(min = 6) String password // Opcional para atualização
 ) {}

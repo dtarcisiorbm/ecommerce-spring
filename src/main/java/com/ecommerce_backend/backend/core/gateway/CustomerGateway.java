@@ -11,6 +11,8 @@ public interface CustomerGateway {
     Customer save(Customer customer);
     Optional<Customer> findById(UUID id);
     Optional<Customer> findByEmail(String email);
-    void deleteById(UUID id);
+    Optional<Customer> findByIdAndActive(UUID id, boolean active);
+    void softDeleteById(UUID id);
     Page<Customer> findAll(Pageable pageable);
+    Page<Customer> findAllActive(Pageable pageable);
 }

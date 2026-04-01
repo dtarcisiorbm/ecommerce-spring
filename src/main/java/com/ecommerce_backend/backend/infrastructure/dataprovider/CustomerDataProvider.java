@@ -6,7 +6,9 @@ import com.ecommerce_backend.backend.entrypoints.mapper.CustomerMapper;
 import com.ecommerce_backend.backend.infrastructure.dataprovider.repository.CustomerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component; // IMPORTANTE
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,15 +41,26 @@ public class CustomerDataProvider implements CustomerGateway {
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public Optional<Customer> findByIdAndActive(UUID id, boolean active) {
+        return repository.findByIdAndActive(id, active).map(mapper::toDomain);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteById(UUID id) {
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Customer not found with id: " + id);
         }
-        repository.deleteById(id);
+        repository.softDeleteById(id);
     }
 
     @Override
     public Page<Customer> findAll(Pageable pageable) {
         return repository.findAll(pageable).map(mapper::toDomain);
+    }
+
+    @Override
+    public Page<Customer> findAllActive(Pageable pageable) {
+        return repository.findAllActive(pageable).map(mapper::toDomain);
     }
 }

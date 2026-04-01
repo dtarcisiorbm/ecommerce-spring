@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 4,
-	"__export_date": "2026-03-31T17:46:00.000Z",
+	"__export_date": "2026-04-01T12:09:00.000Z",
 	"resources": [
 		{
 			"_id": "wrk_ecommerce_v4",
@@ -223,7 +223,99 @@
 			],
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n  \"name\": \"Mouse Gamer Wireless\",\n  \"sku\": \"MOU-001\",\n  \"price\": 199.99,\n  \"stock\": 50\n}"
+				"text": "{\n  \"name\": \"Mouse Gamer Wireless\",\n  \"sku\": \"MOU-001\",\n  \"price\": 199.99,\n  \"stock\": 50,\n  \"categoryId\": \"550e8400-e29b-41d4-a716-446655440444\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_create_prod_with_category",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products",
+			"name": "Criar Produto com Categoria",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Teclado Mecânico\",\n  \"sku\": \"TEC-001\",\n  \"price\": 299.99,\n  \"stock\": 30,\n  \"categoryId\": \"550e8400-e29b-41d4-a716-446655440444\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_get_prod_by_id",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/1",
+			"name": "Buscar Produto por ID",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_update_prod",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/1",
+			"name": "Atualizar Produto",
+			"method": "PUT",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Mouse Gamer Wireless Atualizado\",\n  \"sku\": \"MOU-001-UPD\",\n  \"price\": 179.99,\n  \"stock\": 45,\n  \"categoryId\": \"550e8400-e29b-41d4-a716-446655440444\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_delete_prod",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/1",
+			"name": "Excluir Produto",
+			"method": "DELETE",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_search_prod_by_name",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/search?name=Mouse",
+			"name": "Buscar Produto por Nome",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_search_prod_by_category",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/category/550e8400-e29b-41d4-a716-446655440444",
+			"name": "Buscar Produtos por Categoria",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_filter_prods",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/products/filter",
+			"name": "Filtrar Produtos",
+			"method": "POST",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Mouse\",\n  \"categoryId\": \"550e8400-e29b-41d4-a716-446655440444\",\n  \"minPrice\": 100,\n  \"maxPrice\": 300,\n  \"inStock\": true\n}"
 			},
 			"_type": "request"
 		},
@@ -265,6 +357,144 @@
 			"headers": [
 				{ "name": "Accept", "value": "application/json" },
 				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_update_order_status",
+			"parentId": "fld_core",
+			"url": "{{ _.base_url }}/orders/1/status",
+			"name": "Atualizar Status do Pedido",
+			"method": "PUT",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"status\": \"PAID\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "fld_categories",
+			"parentId": "wrk_ecommerce_v4",
+			"name": "4. Categorias de Produtos (/categories)",
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_list_categories",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories",
+			"name": "Listar Categorias (Admin)",
+			"method": "GET",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_list_active_categories",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/active",
+			"name": "Listar Categorias Ativas",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_list_root_categories",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/root",
+			"name": "Listar Categorias Raiz",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_get_category_by_id",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/550e8400-e29b-41d4-a716-446655440444",
+			"name": "Buscar Categoria por ID",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_list_subcategories",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/550e8400-e29b-41d4-a716-446655440444/subcategories",
+			"name": "Listar Subcategorias",
+			"method": "GET",
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
+			],
+			"_type": "request"
+		},
+		{
+			"_id": "req_create_category",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories",
+			"name": "Criar Categoria",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Periféricos\",\n  \"description\": \"Mouse, teclados, headsets\",\n  \"parentId\": null\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_create_subcategory",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories",
+			"name": "Criar Subcategoria",
+			"method": "POST",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Mouse\",\n  \"description\": \"Mouse gamer e profissional\",\n  \"parentId\": \"550e8400-e29b-41d4-a716-446655440444\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_update_category",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/550e8400-e29b-41d4-a716-446655440444",
+			"name": "Atualizar Categoria",
+			"method": "PUT",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" }
+			],
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"name\": \"Periféricos Atualizado\",\n  \"description\": \"Mouse, teclados, headsets, webcams\"\n}"
+			},
+			"_type": "request"
+		},
+		{
+			"_id": "req_delete_category",
+			"parentId": "fld_categories",
+			"url": "{{ _.base_url }}/categories/550e8400-e29b-41d4-a716-446655440444",
+			"name": "Excluir Categoria",
+			"method": "DELETE",
+			"authentication": { "type": "bearer", "token": "{{ _.admin_token }}" },
+			"headers": [
+				{ "name": "Accept", "value": "application/json" }
 			],
 			"_type": "request"
 		}

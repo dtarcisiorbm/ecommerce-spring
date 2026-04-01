@@ -1,0 +1,14 @@
+package com.ecommerce_backend.backend.infrastructure.dataprovider.repository;
+
+import com.ecommerce_backend.backend.infrastructure.persistence.entity.ShoppingCartEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface ShoppingCartRepository extends JpaRepository<ShoppingCartEntity, UUID> {
+    Optional<ShoppingCartEntity> findByCustomerId(UUID customerId);
+    void deleteByCustomerId(UUID customerId);
+}

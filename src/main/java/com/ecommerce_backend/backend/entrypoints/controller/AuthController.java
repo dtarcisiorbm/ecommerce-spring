@@ -8,6 +8,7 @@ import com.ecommerce_backend.backend.core.useCases.create.CreateCustomerUseCase;
 import com.ecommerce_backend.backend.core.useCases.create.CreateUserUseCase;
 import com.ecommerce_backend.backend.entrypoints.dto.*;
 import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
+import com.ecommerce_backend.backend.infrastructure.ratelimit.RateLimit;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,7 @@ public class AuthController {
      * Registra um novo usuário administrativo
      */
     @PostMapping("/register")
+    @RateLimit(requests = 5, windowMinutes = 5, message = "Too many registration attempts. Please try again later.")
     public ResponseEntity<Void> registerUser(@RequestBody @Valid RegisterRequest request) {
         User newUser = new User(
                 null,
@@ -61,6 +63,7 @@ public class AuthController {
      * Registra um novo cliente
      */
     @PostMapping("/customer/register")
+    @RateLimit(requests = 5, windowMinutes = 5, message = "Too many registration attempts. Please try again later.")
     public ResponseEntity<Void> registerCustomer(@RequestBody @Valid CustomerRequest request) {
         Customer newCustomer = new Customer(
                 null,
@@ -78,6 +81,7 @@ public class AuthController {
      * Autentica usuário administrativo
      */
     @PostMapping("/login")
+    @RateLimit(requests = 10, windowMinutes = 1, message = "Too many login attempts. Please try again later.")
     public ResponseEntity<LoginResponse> loginUser(@RequestBody @Valid LoginRequest request) {
         User user = authenticateUserUseCase.execute(request.email(), request.password());
         String token = tokenService.generateToken(user);
@@ -88,6 +92,7 @@ public class AuthController {
      * Autentica cliente
      */
     @PostMapping("/customer/login")
+    @RateLimit(requests = 10, windowMinutes = 1, message = "Too many login attempts. Please try again later.")
     public ResponseEntity<LoginResponse> loginCustomer(@RequestBody @Valid LoginRequest request) {
         Customer customer = authenticateCustomerUseCase.execute(request.email(), request.password());
         

@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,5 +26,25 @@ public class CustomerEntity {
     private String taxId;
 
     @Column(nullable = false)
-    private String password; // Campo para hash BCrypt
+    private String password;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

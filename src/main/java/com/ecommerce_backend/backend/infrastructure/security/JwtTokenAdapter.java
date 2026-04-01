@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.infrastructure.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.ecommerce_backend.backend.core.domain.Customer;
 import com.ecommerce_backend.backend.core.domain.User;
 import com.ecommerce_backend.backend.core.gateway.TokenServiceGateway;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -36,6 +38,25 @@ public class JwtTokenAdapter implements TokenServiceGateway {
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
+        }
+    }
+
+    @Override
+    public String generateToken(Customer customer) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+
+            // Clientes sempre têm role CUSTOMER
+            List<String> rolesList = Arrays.asList("CUSTOMER");
+
+            return JWT.create()
+                    .withIssuer("ecommerce-backend")
+                    .withSubject(customer.email())
+                    .withClaim("roles", rolesList)
+                    .withExpiresAt(genExpirationDate())
+                    .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token para cliente", exception);
         }
     }
 

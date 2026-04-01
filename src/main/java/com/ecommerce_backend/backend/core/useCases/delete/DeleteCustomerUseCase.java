@@ -16,7 +16,12 @@ public class DeleteCustomerUseCase {
     }
 
     public void execute(UUID id) {
-        Optional<Customer> customer = customerGateway.findById(id);
-        customer.ifPresent(c -> customerGateway.deleteById(id));
+        Optional<Customer> customer = customerGateway.findByIdAndActive(id, true);
+        if (customer.isEmpty()) {
+            throw new IllegalArgumentException("Active customer not found with id: " + id);
+        }
+        
+        // Realiza soft delete mantendo o histórico
+        customerGateway.softDeleteById(id);
     }
 }
