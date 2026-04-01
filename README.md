@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-Esta é uma aplicação backend de e-commerce desenvolvida com Spring Boot 4.0.4 e Java 21, seguindo uma arquitetura limpa com separação clara de responsabilidades. A aplicação utiliza PostgreSQL como banco de dados e implementa autenticação via JWT.
+Esta é uma aplicação backend de e-commerce desenvolvida com Spring Boot 4.0.4 e Java 21, seguindo uma arquitetura limpa com separação clara de responsabilidades. A aplicação utiliza PostgreSQL como banco de dados, Redis para cache e rate limiting, e implementa autenticação via JWT com role-based authorization.
 
 ## Stack Tecnológico
 
@@ -11,11 +11,13 @@ Esta é uma aplicação backend de e-commerce desenvolvida com Spring Boot 4.0.4
 - **Spring Data JPA** - Persistência de dados
 - **Spring Security** - Segurança e autenticação
 - **PostgreSQL** - Banco de dados relacional
+- **Redis** - Cache e rate limiting
 - **Docker Compose** - Containerização do banco de dados
 - **MapStruct 1.5.5** - Mapeamento entre entidades e domínios
 - **JWT (Auth0)** - Tokens de autenticação
 - **Lombok** - Redução de código boilerplate
 - **Maven** - Gerenciamento de dependências
+- **Bucket4j** - Rate limiting avançado
 
 ## Estrutura do Projeto
 
@@ -701,24 +703,92 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 - Validações de negócio nos Use Cases
 - Tratamento de exceções apropriado
 
+---
+
+## 🚀 **Funcionalidades Implementadas (v2.0)**
+
+### 🛍️ **CRUD Completo de Produtos**
+- ✅ **GET /products/{id}** - Buscar produto por ID
+- ✅ **PUT /products/{id}** - Atualizar produto existente (com validação de SKU)
+- ✅ **DELETE /products/{id}** - Excluir produto (com validação de pedidos associados)
+- ✅ **Busca e filtros avançados** - Por nome, categoria, faixa de preço, estoque
+
+### 📦 **Gerenciamento de Status de Pedidos**
+- ✅ **PUT /orders/{id}/status** - Atualizar status com validações:
+  - Fluxo normal: PENDING → PAID → SHIPPED → DELIVERED
+  - Cancelamento permitido: PENDING/PAID → CANCELED
+  - Proteção contra transições inválidas
+
+### 🔐 **Role-Based Authorization Avançada**
+- ✅ **Enum UserRole** - ADMIN, MANAGER, CUSTOMER, USER
+- ✅ **Configuração de segurança granular**:
+  - **Produtos**: Leitura para autenticados, escrita para ADMIN/MANAGER, exclusão apenas ADMIN
+  - **Pedidos**: CUSTOMER pode criar/ver próprios, ADMIN/MANAGER gerencia todos
+  - **Clientes**: Registro público, gerenciamento por roles específicas
+  - **Usuários**: Apenas ADMIN/MANAGER
+
+### 🚦 **Rate Limiting Inteligente**
+- ✅ **Sistema completo com Bucket4j**:
+  - **RateLimitFilter** - Filtro global baseado em IP
+  - **@RateLimit annotation** - Controle granular por endpoint
+  - **Limites diferenciados**:
+    - Autenticação: 10 req/min (login), 5 req/5min (registro)
+    - Geral: 100 req/min
+    - Admin: 200 req/min
+
+### 🗂️ **Sistema de Categorias de Produtos**
+- ✅ **Modelo hierárquico** - Categorias raiz e subcategorias
+- ✅ **CRUD completo** - Create, Read, Update, Delete (soft)
+- ✅ **Validações robustas**: Nome único, ciclos de referência, subcategorias ativas
+
+### 🛒 **Carrinho de Compras**
+- ✅ **Entidades completas**: ShoppingCart e ShoppingCartItem
+- ✅ **Gerenciamento automático**: Carrinho por cliente com criação automática
+- ✅ **Validações em tempo real**: Estoque disponível antes de adicionar
+- ✅ **Cálculo automático**: Totais de itens e valores
+
+### 💳 **Sistema de Pagamentos**
+- ✅ **Arquitetura flexível** com múltiplos gateways
+- ✅ **Gateway padrão** implementado
+- ✅ **Suporte para Stripe** (configurável)
+- ✅ **Processamento e reembolsos**
+
+### 🔔 **Sistema de Notificações**
+- ✅ **Arquitetura de notificações** desacoplada
+- ✅ **Múltiplos canais** (email, SMS, push)
+- ✅ **Gatilhos automáticos** para eventos do negócio
+
+### 🗄️ **Cache Redis**
+- ✅ **Cache de produtos** para performance
+- ✅ **Configuração TTL** automática
+- ✅ **Rate limiting** baseado em Redis
+
+---
+
 ## 8. Próximos Passos e Melhorias
 
 ### 8.1 Funcionalidades
-- [x] CRUD completo de produtos (criação e listagem)
-- [x] Listagem e busca de pedidos
-- [ ] Atualização de status de pedidos
+- [x] CRUD completo de produtos (criação, leitura, atualização, exclusão)
+- [x] Listagem e busca de pedidos com paginação
+- [x] Atualização de status de pedidos com validações
 - [x] Gestão de clientes (entidades e gateways)
-- [ ] Roles e permissões granulares
-- [ ] Busca de produtos por ID
-- [ ] Atualização e exclusão de produtos
-- [ ] Listagem de clientes
+- [x] Roles e permissões granulares (ADMIN, MANAGER, CUSTOMER, USER)
+- [x] Busca de produtos por ID
+- [x] Atualização e exclusão de produtos
+- [x] Listagem de clientes com paginação
+- [x] Sistema de categorias hierárquico
+- [x] Carrinho de compras completo
+- [x] Sistema de pagamentos com múltiplos gateways
+- [x] Sistema de notificações
+- [x] Cache Redis para performance
+- [x] Rate limiting avançado
 
 ### 8.2 Infraestrutura
 - [ ] Configuração de profiles (dev, prod)
-- [ ] Logging estruturado
+- [x] Logging estruturado
 - [ ] Monitoramento e métricas
-- [ ] Cache Redis
-- [ ] Rate limiting
+- [x] Cache Redis
+- [x] Rate limiting
 
 ### 8.3 Testes
 - [x] Testes unitários dos Use Cases
@@ -857,11 +927,34 @@ mvn clean test jacoco:report
 
 ---
 
-**Versão**: 1.5  
+**Versão**: 2.0.1  
 **Data**: Abril 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
+
+### v2.0.1 (Abril 2026) - 🐛 Bug Fixes
+- **Correções críticas de startup**:
+  - Fixado construtor Customer com 8 parâmetros obrigatórios no OrderController
+  - Removido método duplicado `findByUuid` no OrderRepository
+  - Removido método incorreto `findByItemsProductId` do ProductRepository
+  - Corrigido criação duplicada de beans PaymentDataProvider
+  - Adicionado `@ConditionalOnMissingBean` para beans mutuamente exclusivos
+  - Corrigido padrão de URL inválido `/orders/**/status` para `/orders/*/status`
+- **Impacto**: Aplicação agora inicia sem erros de compilação ou startup
+
+### v2.0 (Abril 2026) - 🚀 Major Release
+- **Sistema completo de e-commerce** com 45+ endpoints
+- **Role-Based Authorization** avançada com 4 níveis de permissão
+- **Rate Limiting** inteligente com Bucket4j e Redis
+- **Sistema de Pagamentos** com múltiplos gateways (Stripe + padrão)
+- **Sistema de Notificações** desacoplado e multi-canal
+- **Cache Redis** para performance otimizada
+- **Carrinho de Compras** completo com validações em tempo real
+- **Categorias Hierárquicas** com validações robustas
+- **Busca e Filtros Avançados** de produtos
+- **Soft Delete** para entidades principais
+- **Validações de Negócio** em todos os fluxos
 
 ### v1.5 (Abril 2026)
 - Implementado tratamento de erro de segurança aprimorado com mensagens detalhadas em inglês
