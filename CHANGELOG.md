@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [v2.0.1] - 2026-04-01
+
+### 🐛 **Bug Fixes**
+
+#### 🔧 **Correções de Compilação e Startup**
+- ✅ **Customer constructor** - Fixado parâmetros faltantes no OrderController (esperava 8, encontrou 5)
+- ✅ **OrderRepository** - Removido método duplicado `findByUuid` que causava conflito
+- ✅ **ProductRepository** - Removido método incorreto `findByItemsProductId` que não pertencia a esta entidade
+- ✅ **PaymentDataProvider** - Removido `@Component` para evitar criação duplicada de beans
+- ✅ **PaymentConfig** - Adicionado `@ConditionalOnMissingBean` para tornar beans mutuamente exclusivos
+- ✅ **SecurityConfig** - Corrigido padrão de URL inválido `/orders/**/status` para `/orders/*/status`
+
+#### 🚀 **Impacto das Correções**
+- **Spring Boot startup** - Aplicação agora inicia sem erros de bean duplication
+- **Compilação** - Todos os erros de compilação resolvidos
+- **URL Mapping** - Padrões de URL válidos e funcionais
+- **Dependency Injection** - Beans injetados corretamente sem ambiguidade
+
+---
+
 ## [v2.0.0] - 2026-04-01
 
 ### 🚀 **Funcionalidades de Alta Prioridade Implementadas**
