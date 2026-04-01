@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Comprehensive Error Handling System**
+  - Enhanced GlobalExceptionHandler with missing exception types (EmptyResultDataAccessException, DataIntegrityViolationException, RuntimeException)
+  - New SecurityExceptionHandler for authentication and authorization errors
+  - Repository layer safety checks to prevent unexpected crashes
+  - Standardized error response format with timestamp and path
+  - Security logging for failed authentication attempts
+  - Robust exception handling in ProductController and OrderController
+  - Improved AuthController validation with @NotBlank annotations
+
+### Changed
+- **Error Response Format** - Now includes timestamp and path fields for better debugging
+- **Controller Validation** - Replaced manual null checks with proper validation annotations
+- **Repository Operations** - Added existence checks before delete operations
+
+### Fixed
+- **Repository Safety** - CustomerDataProvider.deleteById() now validates entity existence before deletion
+- **Authentication Validation** - AuthController endpoints use proper validation instead of manual checks
+- **Exception Propagation** - Controllers now properly handle and re-throw business logic exceptions
+
+### Security
+- **Authentication Logging** - Added security audit logging for failed authentication attempts
+- **Access Control** - Enhanced AccessDeniedException handling with proper logging
+- **Input Validation** - Improved request validation with @NotBlank annotations
+
+### Added
 - **Comprehensive Test Suite**
   - Complete test coverage with JUnit 5 and Mockito
   - Unit tests for domain layer (ProductTest)
@@ -118,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Recent Commits
 
+- `fbd0c27` feat: add comprehensive exception handling
 - `c65837e` Merge remote-tracking branch 'origin/master'
 - `f1ba51a` Fix OrderItemRequest visibility issue
 - `e4af8d3` feat: reorganize use cases and add product management features

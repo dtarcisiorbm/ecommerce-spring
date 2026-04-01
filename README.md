@@ -63,7 +63,8 @@ src/main/java/com/ecommerce_backend/backend/
 │   │   ├── OrderRequest.java
 │   │   └── RegisterRequest.java
 │   ├── exceptions/                 # Tratamento global de exceções
-│   │   └── GlobalExceptionHandler.java
+│   │   ├── GlobalExceptionHandler.java
+│   │   └── SecurityExceptionHandler.java
 │   └── mapper/                     # Mapeamento de DTOs
 │       ├── CustomerMapper.java
 │       ├── OrderMapper.java
@@ -509,20 +510,32 @@ public record OrderItemRequest(
   - `IllegalArgumentException`: Retorna HTTP 400 Bad Request
   - `IllegalStateException`: Retorna HTTP 409 Conflict
   - `MethodArgumentNotValidException`: Retorna HTTP 400 com detalhes da validação
-- **Resposta Padronizada**: ErrorResponse com status e mensagem
+  - `EmptyResultDataAccessException`: Retorna HTTP 404 Not Found
+  - `DataIntegrityViolationException`: Retorna HTTP 409 Conflict
+  - `RuntimeException`: Retorna HTTP 500 Internal Server Error
+- **Resposta Padronizada**: ErrorResponse com status, mensagem, timestamp e path
+
+#### **SecurityExceptionHandler**
+- **Propósito**: Tratamento especializado para exceções de segurança
+- **Logging de Auditoria**: Registra tentativas de acesso não autorizado
+- **Exceções Tratadas**:
+  - `BadCredentialsException`: Retorna HTTP 401 com logging de segurança
+  - `AccessDeniedException`: Retorna HTTP 403 com auditoria de acesso
 
 ```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
-    }
-    
-    // Outros métodos de tratamento...
+// Formato de resposta de erro padronizado
+{
+  "status": 400,
+  "message": "Validation failed: name: must not be blank",
+  "timestamp": "2026-04-01T12:00:00",
+  "path": "/api/products"
 }
 ```
+
+#### **Segurança na Camada de Repository**
+- **Validação de Existência**: Operações de delete verificam existência antes de executar
+- **Prevenção de Crashes**: Evita EmptyResultDataAccessException com validações proativas
+- **Mensagens Claras**: Erros amigáveis para o cliente
 
 ### 3.5 Mappers (MapStruct)
 
@@ -815,11 +828,20 @@ mvn clean test jacoco:report
 
 ---
 
-**Versão**: 1.3  
+**Versão**: 1.4  
 **Data**: Abril 2026  
 **Autor**: Sistema de Documentação Automática
 
 ## Histórico de Atualizações
+
+### v1.4 (Abril 2026)
+- Implementado sistema abrangente de tratamento de erros
+- Adicionado SecurityExceptionHandler para auditoria de segurança
+- Aprimorado GlobalExceptionHandler com novas exceções
+- Adicionado validação de segurança na camada de repository
+- Padronizado formato de resposta de erro com timestamp e path
+- Implementado logging de tentativas de acesso não autorizado
+- Adicionado tratamento robusto de exceções nos controllers
 
 ### v1.3 (Abril 2026)
 - Adicionada suíte completa de testes automatizados
