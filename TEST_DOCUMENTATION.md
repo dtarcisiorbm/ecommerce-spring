@@ -120,6 +120,39 @@ assertAll("Product creation should be successful",
   - `@DataJpaTest`: Testes de repositories
   - `@ExtendWith(MockitoExtension.class)`: Integração com Mockito
 
+## Atualizações para Spring Boot 4.x
+
+### Mudanças de Anotações
+- **@MockBean → @MockitoBean**: Substituição para maior clareza
+- **@WebMvcTest**: Import atualizado para `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`
+- **@DataJpaTest**: Import atualizado para `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`
+- **@TestEntityManager**: Import atualizado para `org.springframework.boot.jpa.test.autoconfigure.TestEntityManager`
+
+### Exemplo de Migração
+```java
+// Antes (Spring Boot 3.x)
+@MockBean
+private CreateProductUseCase createProductUseCase;
+
+// Depois (Spring Boot 4.x)
+@MockitoBean
+private CreateProductUseCase createProductUseCase;
+```
+
+## Correções Aplicadas
+
+### PageImpl Serialization Warning
+**Problema**: Warning de serialização instável de PageImpl
+**Solução**: Adicionar `@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)` em BackendApplication
+
+```java
+@SpringBootApplication
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+public class BackendApplication {
+    // ...
+}
+```
+
 ## Cobertura de Testes
 
 ### **Cenários de Sucesso**
@@ -164,6 +197,17 @@ mvn test -Dtest="ProductControllerTest"
 mvn clean test jacoco:report
 ```
 
+## Histórico de Commits
+
+### Commit: feat: add comprehensive test suite
+- **Hash**: 727e69e
+- **Data**: 2026-04-01
+- **Arquivos**: 8 arquivos criados, 1929 linhas adicionadas
+- **Mudanças principais**:
+  - Criação completa da suíte de testes
+  - Correção do warning de PageImpl serialization
+  - Atualização para Spring Boot 4.x compatibility
+
 ## Benefícios Desta Abordagem
 
 1. **Confiabilidade**: Testes abrangentes garantem o funcionamento correto
@@ -184,3 +228,5 @@ mvn clean test jacoco:report
 **Total de Arquivos de Teste Criados**: 6
 **Total de Métodos de Teste**: 50+
 **Cobertura Estimada**: >90%
+**Compatibilidade**: Spring Boot 4.x
+**Framework**: JUnit 5 + Mockito
