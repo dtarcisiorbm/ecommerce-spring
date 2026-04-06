@@ -51,11 +51,30 @@ public class AuthController {
                 request.name(),
                 request.email(),
                 request.password(),
-                Collections.singleton("USER"),
+                request.roles() != null ? request.roles() : Collections.singleton("USER"),
                 true
         );
 
         createUserUseCase.execute(newUser);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    /**
+     * Registra um novo usuário administrador com papel ADMIN
+     */
+    @PostMapping("/register/admin")
+    @RateLimit(requests = 3, windowMinutes = 10, message = "Too many admin registration attempts. Please try again later.")
+    public ResponseEntity<Void> registerAdmin(@RequestBody @Valid RegisterRequest request) {
+        User adminUser = new User(
+                null,
+                request.name(),
+                request.email(),
+                request.password(),
+                Collections.singleton("ADMIN"),
+                true
+        );
+
+        createUserUseCase.execute(adminUser);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

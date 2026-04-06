@@ -29,7 +29,7 @@ public class CreateUserUseCase {
                 user.name(),
                 user.email(),
                 protectedPassword,
-                Collections.singleton("USER"),
+                user.roles(),
                 true
         );
 
