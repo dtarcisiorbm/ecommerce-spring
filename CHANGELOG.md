@@ -1,5 +1,58 @@
 # CHANGELOG
 
+## [v2.0.2] - 2026-04-06
+
+### 🔐 **Security & Authentication Fixes**
+
+#### 🐛 **Critical Bug Fix: Admin Role Assignment**
+- ✅ **Fixed admin token access** - Resolved 403 Forbidden errors for admin users
+- ✅ **Role assignment mechanism** - Admin users now receive proper ADMIN role instead of USER
+- ✅ **New admin endpoint** - Added `/auth/register/admin` for dedicated admin user creation
+- ✅ **Flexible role support** - Updated registration to accept optional roles parameter
+
+#### 🚀 **Technical Changes**
+- **RegisterRequest.java**: Added optional `Set<String> roles` field
+- **CreateUserUseCase.java**: Now uses roles from input instead of hardcoding "USER"
+- **AuthController.java**: 
+  - Updated `/auth/register` to accept optional roles (defaults to "USER")
+  - Added `/auth/register/admin` endpoint that creates users with "ADMIN" role
+- **SecurityConfig.java**: Admin routes now properly accessible with ADMIN role
+
+#### 🔧 **Impact**
+- **Before**: Admin users created with USER role → 403 Forbidden on `/products`, `/users`, etc.
+- **After**: Admin users created with ADMIN role → Full access to admin-only endpoints
+- **Backward Compatible**: Existing registrations continue to work with default USER role
+
+#### 📝 **Usage Examples**
+```bash
+# Create admin user (new dedicated endpoint)
+POST /auth/register/admin
+{
+  "name": "Admin User",
+  "email": "admin@loja.com",
+  "password": "admin123"
+}
+
+# Create user with custom roles (enhanced endpoint)
+POST /auth/register
+{
+  "name": "Manager User", 
+  "email": "manager@loja.com",
+  "password": "manager123",
+  "roles": ["MANAGER", "USER"]
+}
+
+# Create regular user (unchanged)
+POST /auth/register
+{
+  "name": "Regular User",
+  "email": "user@loja.com", 
+  "password": "user123"
+}
+```
+
+---
+
 ## [v2.0.1] - 2026-04-01
 
 ### 🐛 **Bug Fixes**

@@ -895,8 +895,13 @@ java -jar target/backend-0.0.1-SNAPSHOT.jar
 ## 9. API Endpoints
 
 ### 9.1 Autenticação
-- `POST /auth/register` - Registrar novo usuário
+- `POST /auth/register` - Registrar novo usuário (com roles opcionais)
+- `POST /auth/register/admin` - Registrar usuário administrador (role ADMIN)
 - `POST /auth/login` - Autenticar e obter token
+- `POST /auth/customer/register` - Registrar cliente
+- `POST /auth/customer/login` - Autenticar cliente
+- `POST /auth/validate` - Validar token
+- `POST /auth/refresh` - Renovar token
 
 ### 9.2 Pedidos
 - `POST /orders` - Criar novo pedido
