@@ -47,25 +47,14 @@ public class SecurityConfig {
                         // Endpoints de documentação (se houver)
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         
-                        // Endpoints de produtos - leitura pública para autenticados, escrita para ADMIN/MANAGER
+                        // Endpoints básicos para usuários autenticados
                         .requestMatchers(HttpMethod.GET, "/products/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.PUT, "/products/**").hasAnyRole("ADMIN", "MANAGER")
-                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/customers/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/orders/**").authenticated()
                         
-                        // Endpoints de clientes - ADMIN/MANAGER para operações de outros usuários
-                        .requestMatchers(HttpMethod.GET, "/customers/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
-                        .requestMatchers(HttpMethod.POST, "/customers/**").permitAll() // Registro público
-                        .requestMatchers(HttpMethod.PUT, "/customers/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
-                        .requestMatchers(HttpMethod.DELETE, "/customers/**").hasRole("ADMIN")
-                        
-                        // Endpoints de pedidos - CUSTOMER pode criar e ver próprios, ADMIN/MANAGER pode gerenciar todos
-                        .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
-                        .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("ADMIN", "MANAGER", "CUSTOMER")
-                        .requestMatchers(HttpMethod.PUT, "/orders/*/status").hasAnyRole("ADMIN", "MANAGER")
-                        
-                        // Endpoints de usuários - apenas ADMIN/MANAGER
-                        .requestMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        // ADMIN tem acesso total a todas as outras rotas
+                        .requestMatchers("/**").hasRole("ADMIN")
                         
                         // Demais endpoints requerem autenticação
                         .anyRequest().authenticated()

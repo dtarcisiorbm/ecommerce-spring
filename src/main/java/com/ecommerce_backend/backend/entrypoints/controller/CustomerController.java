@@ -54,7 +54,7 @@ public class CustomerController {
      * Lista apenas clientes ativos
      */
     @GetMapping("/active")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<Customer>> listActive(
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         return ResponseEntity.ok(listCustomersUseCase.execute(pageable));
@@ -64,7 +64,7 @@ public class CustomerController {
      * Busca cliente por ID (apenas se estiver ativo)
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Customer> findById(@PathVariable UUID id) {
         return customerGateway.findByIdAndActive(id, true)
                 .map(ResponseEntity::ok)
@@ -75,7 +75,7 @@ public class CustomerController {
      * Atualiza dados do cliente
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and @customerSecurity.canAccess(#id, authentication))")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Customer> update(@PathVariable UUID id, @RequestBody @Valid CustomerRequest request) {
         return customerGateway.findById(id)
                 .map(existingCustomer -> {

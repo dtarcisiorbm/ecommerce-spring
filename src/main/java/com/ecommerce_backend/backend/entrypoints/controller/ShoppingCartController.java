@@ -37,7 +37,7 @@ public class ShoppingCartController {
      * Obter carrinho de compras do cliente
      */
     @GetMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CartResponse> getCart() {
         // Em um caso real, obteríamos o customerId do token JWT
         UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
@@ -54,7 +54,7 @@ public class ShoppingCartController {
      * Adicionar item ao carrinho
      */
     @PostMapping("/items")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ShoppingCartItem> addItem(@RequestBody @Valid AddCartItemRequest request) {
         // Em um caso real, obteríamos o customerId do token JWT
         UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
@@ -75,7 +75,7 @@ public class ShoppingCartController {
      * Atualizar quantidade de item no carrinho
      */
     @PutMapping("/items/{itemId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ShoppingCartItem> updateItem(
             @PathVariable UUID itemId,
             @RequestBody @Valid UpdateCartItemRequest request) {
@@ -94,7 +94,7 @@ public class ShoppingCartController {
      * Remover item do carrinho
      */
     @DeleteMapping("/items/{itemId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeItem(@PathVariable UUID itemId) {
         // Em um caso real, obteríamos o customerId do token JWT
         UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
@@ -111,7 +111,7 @@ public class ShoppingCartController {
      * Limpar carrinho
      */
     @DeleteMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> clearCart() {
         // Em um caso real, obteríamos o customerId do token JWT
         UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo

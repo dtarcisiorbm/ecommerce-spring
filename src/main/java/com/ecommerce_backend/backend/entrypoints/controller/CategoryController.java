@@ -42,7 +42,7 @@ public class CategoryController {
      * Lista todas as categorias (paginado)
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<Category>> listAll(
             @PageableDefault(size = 20, page = 0) Pageable pageable) {
         return ResponseEntity.ok(listCategoriesUseCase.execute(pageable));
@@ -89,7 +89,7 @@ public class CategoryController {
      * Cria nova categoria
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> create(@RequestBody @Valid CategoryRequest request) {
         Category category = new Category(
                 null,
@@ -109,7 +109,7 @@ public class CategoryController {
      * Atualiza categoria existente
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Category> update(
             @PathVariable UUID id,
             @RequestBody @Valid CategoryRequest request) {

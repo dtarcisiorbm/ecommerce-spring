@@ -37,7 +37,7 @@ public class PaymentController {
      * Processar pagamento para um pedido
      */
     @PostMapping("/process")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> processPayment(@RequestBody @Valid PaymentRequest request) {
         try {
             Payment payment = processPaymentUseCase.execute(
@@ -63,7 +63,7 @@ public class PaymentController {
      * Buscar pagamento por ID
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> getPayment(@PathVariable UUID id) {
         return paymentGateway.findById(id)
                 .map(ResponseEntity::ok)
@@ -74,7 +74,7 @@ public class PaymentController {
      * Buscar pagamento por pedido
      */
     @GetMapping("/order/{orderId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> getPaymentByOrder(@PathVariable UUID orderId) {
         return paymentGateway.findByOrderId(orderId)
                 .map(ResponseEntity::ok)
@@ -85,7 +85,7 @@ public class PaymentController {
      * Listar pagamentos por status
      */
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getPaymentsByStatus(@PathVariable String status) {
         try {
             com.ecommerce_backend.backend.core.domain.PaymentStatus paymentStatus = 
@@ -101,7 +101,7 @@ public class PaymentController {
      * Refund parcial de pagamento
      */
     @PostMapping("/{paymentId}/refund")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> refundPayment(
             @PathVariable UUID paymentId,
             @RequestBody @Valid RefundRequest request) {
@@ -117,7 +117,7 @@ public class PaymentController {
      * Refund completo de pagamento
      */
     @PostMapping("/{paymentId}/refund/full")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> refundFullPayment(@PathVariable UUID paymentId) {
         try {
             Payment payment = refundPaymentUseCase.executeFullRefund(paymentId);
