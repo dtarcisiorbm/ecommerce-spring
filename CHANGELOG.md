@@ -1,5 +1,46 @@
 # CHANGELOG
 
+## [v2.0.3] - 2026-04-07
+
+### 🔐 **Security Enhancements**
+
+#### 🚀 **ADMIN Role Full Access Implementation**
+- ✅ **Complete ADMIN access** - ADMIN role now has unrestricted access to all system routes
+- ✅ **Simplified security model** - Streamlined @PreAuthorize annotations across all controllers
+- ✅ **Authenticated user access** - Basic GET endpoints accessible to any authenticated user
+- ✅ **SecurityConfig optimization** - Centralized access control with clear role hierarchy
+
+#### 🔧 **Technical Changes**
+- **SecurityConfig.java**:
+  - Added `.requestMatchers("/**").hasRole("ADMIN")` for complete ADMIN access
+  - Added basic GET endpoints for authenticated users (products, categories, customers, orders)
+- **All Controllers**:
+  - Simplified @PreAuthorize annotations to require only ADMIN role
+  - Removed complex role combinations and security rules
+- **CustomerController**: All endpoints now require ADMIN role
+- **CategoryController**: All endpoints now require ADMIN role  
+- **ShoppingCartController**: All endpoints now require ADMIN role
+- **PaymentController**: All endpoints now require ADMIN role
+
+#### 📝 **Access Matrix**
+| Endpoint Type | Access Level | Description |
+|---------------|-------------|-------------|
+| `/auth/**` | Public | Login, registration, token validation |
+| `/swagger-ui/**` | Public | API documentation |
+| `GET /products/**` | Authenticated | Any authenticated user |
+| `GET /categories/**` | Authenticated | Any authenticated user |
+| `GET /customers/**` | Authenticated | Any authenticated user |
+| `GET /orders/**` | Authenticated | Any authenticated user |
+| `All other routes` | ADMIN | Full ADMIN access required |
+
+#### 🎯 **Impact**
+- **Before**: Complex role-based access with multiple permission combinations
+- **After**: Simple, clear access model - ADMIN has full control, authenticated users have read access
+- **Security**: Maintained security posture with simplified configuration
+- **Maintainability**: Easier to understand and modify access rules
+
+---
+
 ## [v2.0.2] - 2026-04-06
 
 ### 🔐 **Security & Authentication Fixes**
