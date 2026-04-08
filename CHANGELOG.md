@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## [v2.0.4] - 2026-04-08
+
+### **Security & Authentication Improvements**
+
+#### **JWT Authentication Enhancement**
+- **Add AuthenticatedUser utility** - New service for extracting user information from JWT tokens
+- **Dynamic customer ID extraction** - Replace hardcoded UUID with real customer ID from token
+- **SecurityFilter improvements** - Store customerId in authentication details for CUSTOMER users
+- **ROLE_ prefix enforcement** - Add proper Spring Security role prefixes to authorities
+
+#### **Shopping Cart Security Fix**
+- **Customer access granted** - CUSTOMER role now has proper access to cart endpoints
+- **SecurityConfig update** - Added `/cart/**` pattern with `hasAnyRole("CUSTOMER", "ADMIN")`
+- **Data integrity fix** - Resolve `shopping_cart_id` null constraint violations
+- **Mapper correction** - Fixed ShoppingCartItemMapper to properly convert UUID to entity relationship
+
+#### **Technical Changes**
+- **AuthenticatedUser.java** - New utility class with methods:
+  - `getCurrentCustomerId()` - Extract customer ID from authentication
+  - `isCustomer()` / `isAdmin()` - Role verification methods
+  - `getCurrentUserEmail()` - Get authenticated user email
+- **SecurityFilter.java** - Enhanced authentication with customerId storage
+- **ShoppingCartController.java** - Refactored to use dynamic customer identification
+- **ShoppingCartItemMapper.java** - Fixed entity relationship mapping
+
+#### **Bug Fixes**
+- **403 Forbidden errors** - Resolved cart endpoint access issues for CUSTOMER users
+- **409 Data integrity violations** - Fixed null shopping_cart_id when adding cart items
+- **Type mismatch error** - Fixed Set<String> to List<String> conversion in authentication
+
+#### **Impact**
+- **Before**: Hardcoded UUID, authentication errors, data integrity violations
+- **After**: Dynamic customer identification, proper access control, functional cart operations
+- **Security**: Maintained security posture with improved user experience
+- **Performance**: Optimized authentication flow with proper role handling
+
+---
+
 ## [v2.0.3] - 2026-04-07
 
 ### 🔐 **Security Enhancements**
