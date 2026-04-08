@@ -31,3 +31,27 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+.env
+.env.local
+.env.*.local
+
+### Logs ###
+*.log
+logs/
+
+### Database ###
+*.db
+*.sqlite
+*.sqlite3
+
+### SSL/TLS ###
+*.p12
+*.pem
+*.key
+*.crt
+keystore.p12
+
+### Docker ###
+docker-compose.override.yml

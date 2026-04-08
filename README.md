@@ -674,43 +674,276 @@ public record OrderItemRequest(
 
 ## 4. Configuração e Deploy
 
-### 4.1 Banco de Dados
+### 4.1 Variáveis de Ambiente
+
+A aplicação utiliza variáveis de ambiente para configuração em diferentes ambientes. 
+
+#### **Variáveis Obrigatórias**
+```bash
+# Segurança
+JWT_SECRET=chave-secreta-jwt-com-mais-32-caracteres
+
+# Banco de Dados
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ecommerce_db
+DB_USERNAME=ecommerce_user
+DB_PASSWORD=senha_segura
+
+# Redis (Opcional - para cache e rate limiting)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Pagamento Stripe (Opcional)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Email (Opcional)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=seu-email@gmail.com
+EMAIL_PASSWORD=sua-senha-app
+```
+
+#### **Variáveis Opcionais**
+```bash
+# Configurações da Aplicação
+SERVER_PORT=8080
+SPRING_PROFILES_ACTIVE=dev
+
+# Logging
+LOGGING_LEVEL_ROOT=INFO
+LOGGING_LEVEL_COM_ECOMMERCE=DEBUG
+
+# Rate Limiting
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+
+# Cache
+CACHE_ENABLED=true
+CACHE_TTL_MINUTES=30
+```
+
+### 4.2 Configurações por Ambiente
+
+#### ** Ambiente de Desenvolvimento (.env.dev)**
+```bash
+# .env.dev
+JWT_SECRET=dev-secret-key-32-chars-development-environment
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ecommerce_dev
+DB_USERNAME=dev_user
+DB_PASSWORD=dev_password
+REDIS_HOST=localhost
+REDIS_PORT=6379
+SPRING_PROFILES_ACTIVE=dev
+LOGGING_LEVEL_ROOT=DEBUG
+LOGGING_LEVEL_COM_ECOMMERCE=DEBUG
+RATE_LIMIT_REQUESTS_PER_MINUTE=1000
+CACHE_ENABLED=false
+```
+
+#### ** Ambiente de Teste (.env.test)**
+```bash
+# .env.test
+JWT_SECRET=test-secret-key-32-chars-testing-environment
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ecommerce_test
+DB_USERNAME=test_user
+DB_PASSWORD=test_password
+REDIS_HOST=localhost
+REDIS_PORT=6379
+SPRING_PROFILES_ACTIVE=test
+LOGGING_LEVEL_ROOT=WARN
+LOGGING_LEVEL_COM_ECOMMERCE=INFO
+RATE_LIMIT_REQUESTS_PER_MINUTE=500
+CACHE_ENABLED=true
+CACHE_TTL_MINUTES=5
+STRIPE_SECRET_KEY=sk_test_123456789
+EMAIL_HOST=localhost
+EMAIL_PORT=1025
+```
+
+#### ** Ambiente de Produção (.env.prod)**
+```bash
+# .env.prod
+JWT_SECRET=super-secure-production-jwt-secret-key-32-chars
+DB_HOST=prod-db-server.com
+DB_PORT=5432
+DB_NAME=ecommerce_prod
+DB_USERNAME=prod_user
+DB_PASSWORD=super-secure-password
+REDIS_HOST=prod-redis-server.com
+REDIS_PORT=6379
+REDIS_PASSWORD=redis-secure-password
+SPRING_PROFILES_ACTIVE=prod
+LOGGING_LEVEL_ROOT=WARN
+LOGGING_LEVEL_COM_ECOMMERCE=INFO
+RATE_LIMIT_REQUESTS_PER_MINUTE=100
+CACHE_ENABLED=true
+CACHE_TTL_MINUTES=60
+STRIPE_SECRET_KEY=sk_live_123456789
+STRIPE_WEBHOOK_SECRET=whsec_123456789
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=noreply@empresa.com
+EMAIL_PASSWORD=app-specific-password
+```
+
+### 4.3 Banco de Dados
 
 **PostgreSQL via Docker Compose:**
 ```yaml
+# docker-compose.yml
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:15'
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      - 'POSTGRES_DB=${DB_NAME:-ecommerce_db}'
+      - 'POSTGRES_PASSWORD=${DB_PASSWORD:-secret}'
+      - 'POSTGRES_USER=${DB_USERNAME:-ecommerce_user}'
     ports:
-      - '5432:5432'
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+
+  redis:
+    image: 'redis:7-alpine'
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    command: redis-server --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
 ```
 
-**application.properties:**
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/mydatabase
-spring.datasource.username=myuser
-spring.datasource.password=secret
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-api.security.token.secret=${JWT_SECRET:minha-chave-ultra-secreta-de-32-caracteres}
-```
+### 4.4 Build e Execução
 
-### 4.2 Build e Execução
-
+#### **Com Docker Compose (Recomendado)**
 ```bash
-# Subir PostgreSQL
+# Carregar variáveis de ambiente
+source .env.dev  # ou .env.test / .env.prod
+
+# Subir serviços
 docker-compose up -d
 
 # Compilar e executar
 ./mvnw spring-boot:run
 
-# Ou empacotar
-./mvnw clean package
+# Ou com profile específico
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+#### **Empacotamento e Deploy**
+```bash
+# Empacotar para produção
+./mvnw clean package -Pprod
+
+# Executar JAR
+java -jar -Dspring.profiles.active=prod target/backend-0.0.1-SNAPSHOT.jar
+
+# Ou com variáveis de ambiente
+export SPRING_PROFILES_ACTIVE=prod
+export JWT_SECRET=your-secret-key
 java -jar target/backend-0.0.1-SNAPSHOT.jar
+```
+
+### 4.5 Configuração de Profiles Spring
+
+#### **application-dev.yml**
+```yaml
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+  
+logging:
+  level:
+    root: DEBUG
+    com.ecommerce: DEBUG
+
+rate-limit:
+  enabled: true
+  requests-per-minute: 1000
+
+cache:
+  enabled: false
+```
+
+#### **application-test.yml**
+```yaml
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+  
+logging:
+  level:
+    root: WARN
+    com.ecommerce: INFO
+
+rate-limit:
+  enabled: true
+  requests-per-minute: 500
+
+cache:
+  enabled: true
+  ttl-minutes: 5
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_123}
+```
+
+#### **application-prod.yml**
+```yaml
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+  
+logging:
+  level:
+    root: WARN
+    com.ecommerce: INFO
+
+rate-limit:
+  enabled: true
+  requests-per-minute: 100
+
+cache:
+  enabled: true
+  ttl-minutes: 60
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 ```
 ## 5. Fluxos de Negócio
 
