@@ -3,6 +3,7 @@ package com.ecommerce_backend.backend.entrypoints.controller;
 import com.ecommerce_backend.backend.core.domain.ShoppingCartItem;
 import com.ecommerce_backend.backend.core.useCases.cart.*;
 import com.ecommerce_backend.backend.entrypoints.dto.*;
+import com.ecommerce_backend.backend.infrastructure.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,28 +20,28 @@ public class ShoppingCartController {
     private final UpdateCartItemUseCase updateCartItemUseCase;
     private final RemoveItemFromCartUseCase removeItemFromCartUseCase;
     private final ClearCartUseCase clearCartUseCase;
+    private final AuthenticatedUser authenticatedUser;
 
     public ShoppingCartController(
             GetCartUseCase getCartUseCase,
             AddItemToCartUseCase addItemToCartUseCase,
             UpdateCartItemUseCase updateCartItemUseCase,
             RemoveItemFromCartUseCase removeItemFromCartUseCase,
-            ClearCartUseCase clearCartUseCase) {
+            ClearCartUseCase clearCartUseCase,
+            AuthenticatedUser authenticatedUser) {
         this.getCartUseCase = getCartUseCase;
         this.addItemToCartUseCase = addItemToCartUseCase;
         this.updateCartItemUseCase = updateCartItemUseCase;
         this.removeItemFromCartUseCase = removeItemFromCartUseCase;
         this.clearCartUseCase = clearCartUseCase;
+        this.authenticatedUser = authenticatedUser;
     }
 
-    /**
-     * Obter carrinho de compras do cliente
-     */
+
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<CartResponse> getCart() {
-        // Em um caso real, obteríamos o customerId do token JWT
-        UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
+        UUID customerId = getCustomerIdFromToken();
         
         try {
             var cartResponse = getCartUseCase.execute(customerId);
@@ -54,10 +55,9 @@ public class ShoppingCartController {
      * Adicionar item ao carrinho
      */
     @PostMapping("/items")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<ShoppingCartItem> addItem(@RequestBody @Valid AddCartItemRequest request) {
-        // Em um caso real, obteríamos o customerId do token JWT
-        UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
+        UUID customerId = getCustomerIdFromToken();
         
         try {
             ShoppingCartItem item = addItemToCartUseCase.execute(
@@ -75,12 +75,11 @@ public class ShoppingCartController {
      * Atualizar quantidade de item no carrinho
      */
     @PutMapping("/items/{itemId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<ShoppingCartItem> updateItem(
             @PathVariable UUID itemId,
             @RequestBody @Valid UpdateCartItemRequest request) {
-        // Em um caso real, obteríamos o customerId do token JWT
-        UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
+        UUID customerId = getCustomerIdFromToken();
         
         try {
             ShoppingCartItem item = updateCartItemUseCase.execute(itemId, customerId, request.quantity());
@@ -94,10 +93,9 @@ public class ShoppingCartController {
      * Remover item do carrinho
      */
     @DeleteMapping("/items/{itemId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<Void> removeItem(@PathVariable UUID itemId) {
-        // Em um caso real, obteríamos o customerId do token JWT
-        UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
+        UUID customerId = getCustomerIdFromToken();
         
         try {
             removeItemFromCartUseCase.execute(itemId, customerId);
@@ -111,16 +109,31 @@ public class ShoppingCartController {
      * Limpar carrinho
      */
     @DeleteMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<Void> clearCart() {
-        // Em um caso real, obteríamos o customerId do token JWT
-        UUID customerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440444"); // Exemplo
+        UUID customerId = getCustomerIdFromToken();
         
         try {
             clearCartUseCase.execute(customerId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException ex) {
             throw ex; // Deixa o GlobalExceptionHandler tratar
+        }
+    }
+
+    /**
+     * Método auxiliar para obter o ID do cliente do token JWT.
+     * Para usuários ADMIN, retorna um UUID fixo para compatibilidade.
+     */
+    private UUID getCustomerIdFromToken() {
+        if (authenticatedUser.isCustomer()) {
+            return authenticatedUser.getCurrentCustomerId();
+        } else if (authenticatedUser.isAdmin()) {
+            // Para ADMIN, mantemos o UUID fixo por enquanto
+            // Em produção, isso deveria ser tratado de forma diferente
+            return UUID.fromString("550e8400-e29b-41d4-a716-446655440444");
+        } else {
+            throw new IllegalStateException("User must be CUSTOMER or ADMIN");
         }
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -38,30 +39,60 @@ public class SecurityFilter extends OncePerRequestFilter {
             var login = tokenService.validateToken(token);
             var roles = tokenService.getRoles(token);
 
+            System.out.println("Token found: " + token.substring(0, Math.min(20, token.length())) + "...");
+            System.out.println("Login from token: '" + login + "'");
+            System.out.println("Roles from token: " + roles);
+            System.out.println("Login is empty: " + login.isEmpty());
+
             if (!login.isEmpty()) {
                 // Lógica para diferenciar Cliente de Utilizador Administrativo
                 if (roles.contains("CUSTOMER")) {
-                    customerGateway.findByEmail(login).ifPresent(customer -> {
-                        setAuthentication(customer.email(), customer.password(), List.of("ROLE_CUSTOMER"));
+                    System.out.println("Processing as CUSTOMER");
+                    customerGateway.findByEmail(login).ifPresentOrElse(customer -> {
+                        System.out.println("Customer found: " + customer.email() + " with ID: " + customer.id());
+                        setAuthentication(customer.email(), customer.password(), List.of("CUSTOMER"), customer.id());
+                    }, () -> {
+                        System.out.println("Customer NOT found for email: " + login);
                     });
                 } else {
+                    System.out.println("Processing as ADMIN");
                     userGateway.findByEmail(login).ifPresent(user -> {
-                        setAuthentication(user.email(), user.password(), user.roles().stream().map(r -> "ROLE_" + r).toList());
+                        System.out.println("Setting authentication for ADMIN with roles: " + user.roles());
+                        setAuthentication(user.email(), user.password(), user.roles().stream().toList());
                     });
                 }
+            } else {
+                System.out.println("Login is empty, skipping authentication");
             }
+        } else {
+            System.out.println("No token found in request");
         }
         filterChain.doFilter(request, response);
     }
 
     private void setAuthentication(String email, String password, List<String> roles) {
+        setAuthentication(email, password, roles, null);
+    }
+
+    private void setAuthentication(String email, String password, List<String> roles, UUID customerId) {
+        // Adiciona prefixo ROLE_ às authorities para compatibilidade com Spring Security
+        String[] authoritiesWithPrefix = roles.stream()
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                .toArray(String[]::new);
+        
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(email)
                 .password(password)
-                .authorities(roles.toArray(new String[0]))
+                .authorities(authoritiesWithPrefix)
                 .build();
 
         var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        
+        // Adiciona o customerId aos detalhes da autenticação se disponível
+        if (customerId != null) {
+            authentication.setDetails(customerId);
+        }
+        
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 

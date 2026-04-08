@@ -53,6 +53,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/customers/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/orders/**").authenticated()
                         
+                        // Cart endpoints para CUSTOMER e ADMIN
+                        .requestMatchers("/cart/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        
                         // ADMIN tem acesso total a todas as outras rotas
                         .requestMatchers("/**").hasRole("ADMIN")
                         
